@@ -295,6 +295,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Save, Gem, Sparkles, Upload, X } from 'lucide-react';
+import { uploadToCloudinary } from '../cloudinary/upload';
+import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { db } from '../firebase/firebase';
+import LoadingOverlay from './ui/LoadingOverlay';
 
 const AddProduct = () => {
   const navigate = useNavigate();
@@ -327,59 +331,87 @@ const AddProduct = () => {
   };
 
   const handleImageUpload = async (e) => {
-    const files = Array.from(e.target.files);
-    if (files.length === 0) return;
+  const files = Array.from(e.target.files);
+  if (files.length === 0) return;
 
-    setImageUploading(true);
+  setImageUploading(true);
 
-    // Simulate image upload process
-    try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const newImages = files.map(file => ({
-        id: Math.random().toString(36).substr(2, 9),
-        file,
-        preview: URL.createObjectURL(file),
-        name: file.name
-      }));
+  try {
+    // Upload images sequentially or in parallel if needed
+    const newImages = files.map(file => ({
+      id: Math.random().toString(36).substr(2, 9),
+      file,
+      preview: URL.createObjectURL(file),
+      name: file.name
+    }));
 
-      setImages(prev => [...prev, ...newImages]);
-    } catch (error) {
-      console.error('Error uploading images:', error);
-    } finally {
-      setImageUploading(false);
-    }
-  };
+    setImages(prev => [...prev, ...newImages]);
+  } catch (error) {
+    console.error('Error uploading images:', error);
+    alert('Failed to add images. Check console.');
+  } finally {
+    setImageUploading(false);
+  }
+};
 
-  const removeImage = (imageId) => {
-    setImages(prev => prev.filter(img => img.id !== imageId));
-  };
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  if (images.length === 0) {
+    alert('Please upload at least one image.');
+    return;
+  }
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    
-    // Prepare form data with images
+  setLoading(true);
+  setImageUploading(true);
+
+  try {
+    // Upload all images to Cloudinary and get their URLs
+    const uploadedImages = await Promise.all(
+      images.map(async (img) => {
+        const url = await uploadToCloudinary(img.file, `products/${formData.category || 'others'}`);
+        return { name: img.name, url };
+      })
+    );
+
+    setImageUploading(false);
+
     const productData = {
       ...formData,
-      images: images.map(img => ({
-        id: img.id,
-        name: img.name,
-        // In real app, you would upload to server and get URL
-        url: img.preview
-      }))
+      images: uploadedImages,
+      createdAt: serverTimestamp()
     };
 
-    // Simulate API call
-    setTimeout(() => {
-      console.log('Jewelry added:', productData);
-      setLoading(false);
-      navigate('/products');
-    }, 1000);
-  };
+    // Save product to Firebase Firestore
+    await addDoc(collection(db, 'products'), productData);
+
+    console.log('Product added:', productData);
+    setFormData({
+      name: '',
+      description: '',
+    category: '',
+    material: '',
+    gemstone: '',
+    weight: '',
+    price: '',
+    stock: '',
+    status: 'active',
+    featured: false
+  })
+  setImages([])
+  setLoading(false);
+    // navigate('/products');
+  } catch (error) {
+    console.error('Error adding product:', error);
+    alert('Failed to add product. Check console.');
+    setLoading(false);
+    setImageUploading(false);
+  }
+};
 
   return (
     <div>
+      {(loading||imageUploading)&& <LoadingOverlay  />}
+      
       <div className="flex items-center mb-6">
         <button
           onClick={() => navigate('/products')}

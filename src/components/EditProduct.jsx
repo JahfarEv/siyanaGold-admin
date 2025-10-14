@@ -2,6 +2,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Save, Gem, Sparkles } from 'lucide-react';
+import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { db } from "../firebase/firebase";
+import LoadingOverlay from './ui/LoadingOverlay';
 
 const EditProduct = () => {
   const navigate = useNavigate();
@@ -26,23 +29,29 @@ const EditProduct = () => {
   const gemstones = ['Diamond', 'Pearl', 'Sapphire', 'Ruby', 'Emerald', 'Amethyst', 'Topaz', 'Opal'];
 
   useEffect(() => {
-    const mockProduct = {
-      id: 1,
-      name: 'Infinity Diamond Ring',
-      description: 'Exquisite platinum ring with brilliant cut diamonds in an infinity design. Perfect for engagements and special occasions.',
-      category: 'Rings',
-      material: 'Platinum',
-      gemstone: 'Diamond',
-      weight: '2.5',
-      price: '5200.00',
-      stock: '8',
-      status: 'active',
-      featured: true
-    };
-    
-    setFormData(mockProduct);
-    setInitialLoading(false);
-  }, [id]);
+  const fetchProduct = async () => {
+    try {
+      setInitialLoading(true);
+      const docRef = doc(db, "products", id);
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        setFormData(docSnap.data());
+      } else {
+        console.error("No such product!");
+        navigate("/products");
+      }
+    } catch (error) {
+      console.error("Error fetching product:", error);
+    } finally {
+      setInitialLoading(false);
+    }
+  };
+
+  if (id) {
+    fetchProduct();
+  }
+}, [id, navigate]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -53,27 +62,30 @@ const EditProduct = () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      console.log('Jewelry updated:', formData);
-      setLoading(false);
-      navigate('/products');
-    }, 1000);
-  };
+  e.preventDefault();
+  setLoading(true);
 
-  if (initialLoading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600"></div>
-      </div>
-    );
+  try {
+    const docRef = doc(db, "products", id);
+    await updateDoc(docRef, {
+      ...formData,
+      updatedAt: new Date(),
+    });
+
+    console.log("Product updated:", formData);
+    navigate("/products");
+  } catch (error) {
+    console.error("Error updating product:", error);
+  } finally {
+    setLoading(false);
   }
+};
+
+
 
   return (
     <div>
+      {(initialLoading||loading)&&<LoadingOverlay/>}
       <div className="flex items-center mb-6">
         <button
           onClick={() => navigate('/products')}

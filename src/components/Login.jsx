@@ -196,6 +196,8 @@
 // components/Login.js
 import React, { useState } from 'react';
 import { Eye, EyeOff, Gem, Sparkles, Lock, User } from 'lucide-react';
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../firebase/firebase";
 import Swal from 'sweetalert2';
 
 const Login = () => {
@@ -207,10 +209,10 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
 
   // Default admin credentials
-  const adminCredentials = {
-    username: 'admin',
-    password: 'admin123'
-  };
+  // const adminCredentials = {
+  //   username: 'admin',
+  //   password: 'admin123'
+  // };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -224,53 +226,47 @@ const Login = () => {
     e.preventDefault();
     setLoading(true);
 
-    // Simulate API call delay
-    setTimeout(() => {
-      if (formData.username === adminCredentials.username && 
-          formData.password === adminCredentials.password) {
-        
-        // Store login state
-        localStorage.setItem('isLoggedIn', 'true');
-        localStorage.setItem('adminUser', formData.username);
-        
-        // Show success message
-        Swal.fire({
-          title: 'Welcome Back!',
-          text: 'Successfully logged in to Siyana Gold Admin Panel',
-          icon: 'success',
-          confirmButtonColor: '#10b981',
-          background: '#fff',
-          color: '#333',
-          iconColor: '#10b981',
-          customClass: {
-            popup: 'rounded-2xl',
-            confirmButton: 'rounded-xl'
-          }
-        }).then(() => {
-          // Force redirect to dashboard
-          window.location.href = '/';
-        });
-        
-      } else {
-        // Failed login
-        Swal.fire({
-          title: 'Login Failed',
-          text: 'Invalid username or password. Please try again.',
-          icon: 'error',
-          confirmButtonColor: '#ef4444',
-          background: '#fff',
-          color: '#333',
-          iconColor: '#ef4444',
-          customClass: {
-            popup: 'rounded-2xl',
-            confirmButton: 'rounded-xl'
-          }
-        });
-        setLoading(false);
-      }
-    }, 1000);
+    try {
+      await signInWithEmailAndPassword(auth, formData.username, formData.password);
+
+      localStorage.setItem("isLoggedIn", "true");
+      localStorage.setItem("adminUser", formData.username);
+
+      Swal.fire({
+        title: "Welcome Back!",
+        text: "Successfully logged in to Siyana Gold Admin Panel",
+        icon: "success",
+        confirmButtonColor: "#10b981",
+        background: "#fff",
+        color: "#333",
+        iconColor: "#10b981",
+        customClass: {
+          popup: "rounded-2xl",
+          confirmButton: "rounded-xl",
+        },
+      }).then(() => {
+        window.location.href = "/";
+      });
+    } catch (error) {
+      Swal.fire({
+        title: "Login Failed",
+        text: error.message || "Invalid credentials. Please try again.",
+        icon: "error",
+        confirmButtonColor: "#ef4444",
+        background: "#fff",
+        color: "#333",
+        iconColor: "#ef4444",
+        customClass: {
+          popup: "rounded-2xl",
+          confirmButton: "rounded-xl",
+        },
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
+  
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 to-rose-50 flex items-center justify-center p-4">
       <div className="max-w-md w-full">

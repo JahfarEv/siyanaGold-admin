@@ -2,131 +2,191 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Plus, Edit, Trash2, Search } from "lucide-react";
 import Swal from "sweetalert2";
+import { collection, getDocs, query, orderBy, deleteDoc, doc } from "firebase/firestore";
+import { db } from "../firebase/firebase";
+
 
 const ProductsList = () => {
   const [products, setProducts] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
-
   useEffect(() => {
-    const mockProducts = [
-      {
-        id: 1,
-        name: "Infinity Diamond Ring",
-        category: "Rings",
-        price: 5200.0,
-        material: "Platinum",
-        gemstone: "Diamond",
-        weight: 2.5,
-        image: "💍",
-      },
-      {
-        id: 2,
-        name: "Pearl Elegance Necklace",
-        category: "Necklaces",
-        price: 3200.0,
-        material: "White Gold",
-        gemstone: "Pearl",
-        weight: 18.5,
-        image: "📿",
-      },
-      {
-        id: 3,
-        name: "Sapphire Royal Bracelet",
-        category: "Bracelets",
-        price: 7800.0,
-        material: "Rose Gold",
-        gemstone: "Sapphire",
-        weight: 12.2,
-        image: "📿",
-      },
-      {
-        id: 4,
-        name: "Emerald Drop Earrings",
-        category: "Earrings",
-        price: 4500.0,
-        material: "Yellow Gold",
-        gemstone: "Emerald",
-        weight: 8.7,
-        image: "💎",
-      },
-      {
-        id: 5,
-        name: "Diamond Tennis Bracelet",
-        category: "Bracelets",
-        price: 12500.0,
-        material: "Platinum",
-        gemstone: "Diamond",
-        weight: 25.8,
-        image: "📿",
-      },
-      {
-        id: 6,
-        name: "Ruby Cluster Ring",
-        category: "Rings",
-        price: 6800.0,
-        material: "Rose Gold",
-        gemstone: "Ruby",
-        weight: 3.2,
-        image: "💍",
-      },
-    ];
-    setProducts(mockProducts);
-    setLoading(false);
+    const fetchProducts = async () => {
+      try {
+        const q = query(
+          collection(db, "products"),
+          orderBy("createdAt", "desc")
+        );
+        const querySnapshot = await getDocs(q);
+
+        const fetchedProducts = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
+        setProducts(fetchedProducts);
+        console.log(fetchedProducts);
+      } catch (error) {
+        console.error("Error fetching products:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
   }, []);
 
-  const handleDelete = (productId) => {
-    const product = products.find(p => p.id === productId);
-    
+  // useEffect(() => {
+  //   const mockProducts = [
+  //     {
+  //       id: 1,
+  //       name: "Infinity Diamond Ring",
+  //       category: "Rings",
+  //       price: 5200.0,
+  //       material: "Platinum",
+  //       gemstone: "Diamond",
+  //       weight: 2.5,
+  //       image: "💍",
+  //     },
+  //     {
+  //       id: 2,
+  //       name: "Pearl Elegance Necklace",
+  //       category: "Necklaces",
+  //       price: 3200.0,
+  //       material: "White Gold",
+  //       gemstone: "Pearl",
+  //       weight: 18.5,
+  //       image: "📿",
+  //     },
+  //     {
+  //       id: 3,
+  //       name: "Sapphire Royal Bracelet",
+  //       category: "Bracelets",
+  //       price: 7800.0,
+  //       material: "Rose Gold",
+  //       gemstone: "Sapphire",
+  //       weight: 12.2,
+  //       image: "📿",
+  //     },
+  //     {
+  //       id: 4,
+  //       name: "Emerald Drop Earrings",
+  //       category: "Earrings",
+  //       price: 4500.0,
+  //       material: "Yellow Gold",
+  //       gemstone: "Emerald",
+  //       weight: 8.7,
+  //       image: "💎",
+  //     },
+  //     {
+  //       id: 5,
+  //       name: "Diamond Tennis Bracelet",
+  //       category: "Bracelets",
+  //       price: 12500.0,
+  //       material: "Platinum",
+  //       gemstone: "Diamond",
+  //       weight: 25.8,
+  //       image: "📿",
+  //     },
+  //     {
+  //       id: 6,
+  //       name: "Ruby Cluster Ring",
+  //       category: "Rings",
+  //       price: 6800.0,
+  //       material: "Rose Gold",
+  //       gemstone: "Ruby",
+  //       weight: 3.2,
+  //       image: "💍",
+  //     },
+  //   ];
+  //   setProducts(mockProducts);
+  //   setLoading(false);
+  // }, []);
+
+ const handleDelete = async (productId) => {
+  try {
+    // Fetch the product name (optional if you already have it)
+    const product = products.find((p) => p.id === productId);
+
     Swal.fire({
-      title: 'Are you sure?',
-      text: `You are about to delete "${product.name}". This action cannot be undone!`,
-      icon: 'warning',
+      title: "Are you sure?",
+      text: `You are about to delete "${product?.name || "this product"}". This action cannot be undone!`,
+      icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: '#d33',
-      cancelButtonColor: '#3085d6',
-      confirmButtonText: 'Yes, delete it!',
-      cancelButtonText: 'Cancel',
-      background: '#fff',
-      color: '#333',
-      iconColor: '#eab308',
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+      cancelButtonText: "Cancel",
+      background: "#fff",
+      color: "#333",
+      iconColor: "#eab308",
       customClass: {
-        popup: 'rounded-2xl',
-        confirmButton: 'rounded-xl',
-        cancelButton: 'rounded-xl'
-      }
-    }).then((result) => {
+        popup: "rounded-2xl",
+        confirmButton: "rounded-xl",
+        cancelButton: "rounded-xl",
+      },
+    }).then(async (result) => {
       if (result.isConfirmed) {
-        // Delete the product
-        setProducts(products.filter((product) => product.id !== productId));
-        
-        // Show success message
-        Swal.fire({
-          title: 'Deleted!',
-          text: `"${product.name}" has been deleted successfully.`,
-          icon: 'success',
-          confirmButtonColor: '#10b981',
-          background: '#fff',
-          color: '#333',
-          iconColor: '#10b981',
-          customClass: {
-            popup: 'rounded-2xl',
-            confirmButton: 'rounded-xl'
-          }
-        });
+        try {
+          // Delete from Firebase Firestore
+          await deleteDoc(doc(db, "products", productId));
+
+          // Update local state (optional)
+          setProducts(products.filter((p) => p.id !== productId));
+
+          // Success message
+          Swal.fire({
+            title: "Deleted!",
+            text: `"${product?.name || "Product"}" has been deleted successfully.`,
+            icon: "success",
+            confirmButtonColor: "#10b981",
+            background: "#fff",
+            color: "#333",
+            iconColor: "#10b981",
+            customClass: {
+              popup: "rounded-2xl",
+              confirmButton: "rounded-xl",
+            },
+          });
+        } catch (error) {
+          console.error("Error deleting document:", error);
+          Swal.fire({
+            title: "Error!",
+            text: "Failed to delete the product. Please try again.",
+            icon: "error",
+            confirmButtonColor: "#ef4444",
+          });
+        }
       }
     });
-  };
+  } catch (error) {
+    console.error("Error in delete handler:", error);
+  }
+};
+const filteredProducts = products.filter((product) => {
+  const term = searchTerm.toLowerCase().trim();
 
-  const filteredProducts = products.filter((product) => {
-    const matchesSearch =
-      product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.gemstone.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFilter = filter === "all" || product.status === filter;
-    return matchesSearch && matchesFilter;
-  });
+  // Gracefully handle missing fields
+  const name = (product.name || "").toLowerCase();
+  const category = (product.category || "").toLowerCase();
+  const gemstone = (product.gemstone || "").toLowerCase();
+  const material = (product.material || "").toLowerCase();
+  const price = product.price ? product.price.toString().toLowerCase() : "";
+
+  // Check if search term matches any key fields
+  const matchesSearch =
+    name.includes(term) ||
+    category.includes(term) ||
+    gemstone.includes(term) ||
+    material.includes(term) ||
+    price.includes(term);
+
+  // Optional: filter by active/inactive status if you use it
+  const matchesFilter = filter === "all" || product.status === filter;
+
+  return matchesSearch && matchesFilter;
+});
 
   const getGemstoneColor = (gemstone) => {
     const colors = {
@@ -199,8 +259,12 @@ const ProductsList = () => {
               )} flex items-center justify-center relative`}
             >
               {/* Product Image - Large */}
-              <div className="text-5xl transform group-hover:scale-110 transition-transform duration-300">
-                {product.image}
+              <div className="h-40 w-full flex items-center justify-center bg-white">
+                <img
+                  src={product.images[0].url}
+                  alt={product.images[0].name}
+                  className="h-32 w-32 object-contain transition-transform duration-300 group-hover:scale-110"
+                />
               </div>
             </div>
 

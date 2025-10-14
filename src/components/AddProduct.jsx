@@ -412,7 +412,7 @@ const handleSubmit = async (e) => {
     <div>
       {(loading||imageUploading)&& <LoadingOverlay  />}
       
-      <div className="flex items-center mb-6">
+      <div className="flex items-center mb-6">   
         <button
           onClick={() => navigate('/products')}
           className="mr-4 p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"

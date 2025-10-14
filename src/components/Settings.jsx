@@ -1,6 +1,8 @@
 // components/Settings.js
 import React, { useState } from 'react';
 import { Save, Lock, User, Shield, RefreshCw, Bell, Mail, Globe, Eye, EyeOff, CheckCircle } from 'lucide-react';
+import { getAuth, EmailAuthProvider, reauthenticateWithCredential, updatePassword } from "firebase/auth";
+import Swal from "sweetalert2";
 
 const Settings = () => {
   const [activeTab, setActiveTab] = useState('profile');
@@ -59,24 +61,68 @@ const Settings = () => {
     }));
   };
 
-  const handlePasswordSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
+const handlePasswordSubmit = async (e) => {
+  e.preventDefault();
+  setLoading(true);
 
-    // Simulate API call
-    setTimeout(() => {
-      console.log('Password change requested:', passwordData);
-      setPasswordData({
-        currentPassword: '',
-        newPassword: '',
-        confirmPassword: ''
-      });
-      setLoading(false);
-      
-      // Show success message (you can add a toast notification here)
-      alert('Password updated successfully!');
-    }, 1500);
-  };
+  const auth = getAuth();
+  const user = auth.currentUser;
+
+  if (!user) {
+    setLoading(false);
+    Swal.fire({
+      title: "Error!",
+      text: "No user is logged in.",
+      icon: "error",
+      confirmButtonColor: "#ef4444",
+    });
+    return;
+  }
+
+  if (passwordData.newPassword !== passwordData.confirmPassword) {
+    setLoading(false);
+    Swal.fire({
+      title: "Error!",
+      text: "New password and confirm password do not match.",
+      icon: "error",
+      confirmButtonColor: "#ef4444",
+    });
+    return;
+  }
+
+  try {
+    // Reauthenticate the user with current password
+    const credential = EmailAuthProvider.credential(user.email, passwordData.currentPassword);
+    await reauthenticateWithCredential(user, credential);
+
+    // Update the password
+    await updatePassword(user, passwordData.newPassword);
+
+    setPasswordData({
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: ''
+    });
+
+    Swal.fire({
+      title: "Success!",
+      text: "Password updated successfully.",
+      icon: "success",
+      confirmButtonColor: "#10b981",
+    });
+
+  } catch (error) {
+    console.error("Password update error:", error);
+    Swal.fire({
+      title: "Error!",
+      text: error.message || "Failed to update password.",
+      icon: "error",
+      confirmButtonColor: "#ef4444",
+    });
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleProfileSubmit = async (e) => {
     e.preventDefault();

@@ -262,7 +262,7 @@
 
 // components/AdminDashboard.js
 // components/AdminDashboard.js
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Outlet, Link, useLocation } from "react-router-dom";
 import {
   Menu,
@@ -278,12 +278,15 @@ import {
   Package,
   LogOut,
 } from "lucide-react";
+import { getAuth, signOut } from "firebase/auth";
 import Swal from "sweetalert2";
+import { useNavigate } from "react-router-dom";
+
 
 const AdminDashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
-
+  const navigate = useNavigate();
   const navigation = [
     { name: "Dashboard", href: "/", icon: Home },
     { name: "Jewelry", href: "/products", icon: Gem },
@@ -297,31 +300,44 @@ const AdminDashboard = () => {
     }
     return location.pathname.startsWith(href);
   };
+   useEffect(() => {
+  const loggedIn = localStorage.getItem('isLoggedIn') === 'true';
+  if (!loggedIn) {
+    navigate('/login');
+  } 
+}, [navigate]);
 
-  const handleLogout = () => {
-    Swal.fire({
-      title: 'Are you sure?',
-      text: 'You will be logged out from the admin panel.',
-      icon: 'question',
-      showCancelButton: true,
-      confirmButtonColor: '#d33',
-      cancelButtonColor: '#3085d6',
-      confirmButtonText: 'Yes, Logout!',
-      cancelButtonText: 'Cancel',
-      background: '#fff',
-      color: '#333',
-      iconColor: '#eab308',
-      customClass: {
-        popup: 'rounded-2xl',
-        confirmButton: 'rounded-xl',
-        cancelButton: 'rounded-xl'
-      }
-    }).then((result) => {
-      if (result.isConfirmed) {
-        // Clear all authentication data
+const handleLogout = () => {
+  const auth = getAuth();
+  
+
+  Swal.fire({
+    title: 'Are you sure?',
+    text: 'You will be logged out from the admin panel.',
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6',
+    confirmButtonText: 'Yes, Logout!',
+    cancelButtonText: 'Cancel',
+    background: '#fff',
+    color: '#333',
+    iconColor: '#eab308',
+    customClass: {
+      popup: 'rounded-2xl',
+      confirmButton: 'rounded-xl',
+      cancelButton: 'rounded-xl'
+    }
+  }).then(async (result) => {
+    if (result.isConfirmed) {
+      try {
+        // Firebase sign out
+        await signOut(auth);
+
+        // Clear localStorage (optional)
         localStorage.removeItem('isLoggedIn');
         localStorage.removeItem('adminUser');
-        
+
         Swal.fire({
           title: 'Logged Out!',
           text: 'You have been successfully logged out.',
@@ -335,15 +351,26 @@ const AdminDashboard = () => {
             confirmButton: 'rounded-xl'
           }
         }).then(() => {
-          // Force redirect to login page
-          window.location.href = '/login';
+          navigate('/login'); // redirect using react-router
+        });
+
+      } catch (error) {
+        console.error('Logout error:', error);
+        Swal.fire({
+          title: 'Error!',
+          text: 'Failed to log out. Please try again.',
+          icon: 'error',
+          confirmButtonColor: '#ef4444',
+          background: '#fff',
+          color: '#333',
         });
       }
-    });
-  };
+    }
+  });
+};
 
   return (
-    <div className="flex h-screen bg-gradient-to-br from-amber-50 to-rose-50">
+    <div className="flex min-h-screen bg-gradient-to-br from-amber-50 to-rose-50">
       {/* Sidebar for mobile */}
       <div
         className={`fixed inset-0 flex z-50 lg:hidden ${

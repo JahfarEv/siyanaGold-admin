@@ -43,6 +43,7 @@ import Customers from './components/Customers';
 // import Orders from './components/Orders';
 import Settings from './components/Settings';
 import Login from './components/Login';
+import BannerManagement from './components/Banners';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -95,6 +96,7 @@ function App() {
             <Route path="customers" element={<Customers />} />
             {/* <Route path="orders" element={<Orders />} /> */}
             <Route path="settings" element={<Settings />} />
+            <Route path='banners' element={<BannerManagement/>} />
           </Route>
           
           {/* Catch all route */}

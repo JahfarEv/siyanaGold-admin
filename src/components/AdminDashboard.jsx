@@ -277,6 +277,7 @@ import {
   Sparkles,
   Package,
   LogOut,
+  Tv
 } from "lucide-react";
 import { getAuth, signOut } from "firebase/auth";
 import Swal from "sweetalert2";
@@ -292,6 +293,8 @@ const AdminDashboard = () => {
     { name: "Jewelry", href: "/products", icon: Gem },
     { name: "Customers", href: "/customers", icon: Users },
     { name: "Settings", href: "/settings", icon: Settings },
+        { name: "Banners", href: "/banners", icon: Tv },
+
   ];
 
   const isActiveLink = (href) => {

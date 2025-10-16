@@ -1,6 +1,3 @@
-
-
-
 // components/AdminDashboard.js
 // import React, { useState } from "react";
 // import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
@@ -61,7 +58,7 @@
 //       if (result.isConfirmed) {
 //         // Simulate logout process
 //         // In a real app, you would clear tokens, cookies, etc.
-        
+
 //         Swal.fire({
 //           title: 'Logged Out!',
 //           text: 'You have been successfully logged out.',
@@ -156,7 +153,7 @@
 //                 <p className="text-xs text-amber-200">Jewelry Manager</p>
 //               </div>
 //             </div>
-            
+
 //             {/* Logout Button */}
 //             <button
 //               onClick={handleLogout}
@@ -221,7 +218,7 @@
 //                 <p className="text-xs text-amber-200">Jewelry Manager</p>
 //               </div>
 //             </div>
-            
+
 //             {/* Logout Button */}
 //             <button
 //               onClick={handleLogout}
@@ -259,7 +256,6 @@
 
 // export default AdminDashboard;
 
-
 // components/AdminDashboard.js
 // components/AdminDashboard.js
 import React, { useEffect, useState } from "react";
@@ -282,7 +278,6 @@ import { getAuth, signOut } from "firebase/auth";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
 
-
 const AdminDashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
@@ -300,74 +295,72 @@ const AdminDashboard = () => {
     }
     return location.pathname.startsWith(href);
   };
-   useEffect(() => {
-  const loggedIn = localStorage.getItem('isLoggedIn') === 'true';
-  if (!loggedIn) {
-    navigate('/login');
-  } 
-}, [navigate]);
-
-const handleLogout = () => {
-  const auth = getAuth();
-  
-
-  Swal.fire({
-    title: 'Are you sure?',
-    text: 'You will be logged out from the admin panel.',
-    icon: 'question',
-    showCancelButton: true,
-    confirmButtonColor: '#d33',
-    cancelButtonColor: '#3085d6',
-    confirmButtonText: 'Yes, Logout!',
-    cancelButtonText: 'Cancel',
-    background: '#fff',
-    color: '#333',
-    iconColor: '#eab308',
-    customClass: {
-      popup: 'rounded-2xl',
-      confirmButton: 'rounded-xl',
-      cancelButton: 'rounded-xl'
+  useEffect(() => {
+    const loggedIn = localStorage.getItem("isLoggedIn") === "true";
+    if (!loggedIn) {
+      navigate("/login");
     }
-  }).then(async (result) => {
-    if (result.isConfirmed) {
-      try {
-        // Firebase sign out
-        await signOut(auth);
+  }, [navigate]);
 
-        // Clear localStorage (optional)
-        localStorage.removeItem('isLoggedIn');
-        localStorage.removeItem('adminUser');
+  const handleLogout = () => {
+    const auth = getAuth();
 
-        Swal.fire({
-          title: 'Logged Out!',
-          text: 'You have been successfully logged out.',
-          icon: 'success',
-          confirmButtonColor: '#10b981',
-          background: '#fff',
-          color: '#333',
-          iconColor: '#10b981',
-          customClass: {
-            popup: 'rounded-2xl',
-            confirmButton: 'rounded-xl'
-          }
-        }).then(() => {
-          navigate('/login'); // redirect using react-router
-        });
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You will be logged out from the admin panel.",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, Logout!",
+      cancelButtonText: "Cancel",
+      background: "#fff",
+      color: "#333",
+      iconColor: "#eab308",
+      customClass: {
+        popup: "rounded-2xl",
+        confirmButton: "rounded-xl",
+        cancelButton: "rounded-xl",
+      },
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          // Firebase sign out
+          await signOut(auth);
 
-      } catch (error) {
-        console.error('Logout error:', error);
-        Swal.fire({
-          title: 'Error!',
-          text: 'Failed to log out. Please try again.',
-          icon: 'error',
-          confirmButtonColor: '#ef4444',
-          background: '#fff',
-          color: '#333',
-        });
+          // Clear localStorage (optional)
+          localStorage.clear();
+          localStorage.setItem("isLoggedIn", "false");
+          window.dispatchEvent(new Event("storage"));
+          Swal.fire({
+            title: "Logged Out!",
+            text: "You have been successfully logged out.",
+            icon: "success",
+            confirmButtonColor: "#10b981",
+            background: "#fff",
+            color: "#333",
+            iconColor: "#10b981",
+            customClass: {
+              popup: "rounded-2xl",
+              confirmButton: "rounded-xl",
+            },
+          }).then(() => {
+            navigate("/login"); // redirect using react-router
+          });
+        } catch (error) {
+          console.error("Logout error:", error);
+          Swal.fire({
+            title: "Error!",
+            text: "Failed to log out. Please try again.",
+            icon: "error",
+            confirmButtonColor: "#ef4444",
+            background: "#fff",
+            color: "#333",
+          });
+        }
       }
-    }
-  });
-};
+    });
+  };
 
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-amber-50 to-rose-50">
@@ -441,7 +434,7 @@ const handleLogout = () => {
                 <p className="text-xs text-amber-200">Jewelry Manager</p>
               </div>
             </div>
-            
+
             {/* Logout Button */}
             <button
               onClick={handleLogout}
@@ -506,7 +499,7 @@ const handleLogout = () => {
                 <p className="text-xs text-amber-200">Jewelry Manager</p>
               </div>
             </div>
-            
+
             {/* Logout Button */}
             <button
               onClick={handleLogout}

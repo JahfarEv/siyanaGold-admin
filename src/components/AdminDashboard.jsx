@@ -265,14 +265,12 @@ import {
   X,
   Gem,
   Users,
-  BarChart3,
   Settings,
   ChevronRight,
   Home,
-  Crown,
   Sparkles,
-  Package,
   LogOut,
+  Edit2Icon,
 } from "lucide-react";
 import { getAuth, signOut } from "firebase/auth";
 import Swal from "sweetalert2";
@@ -286,6 +284,7 @@ const AdminDashboard = () => {
     { name: "Dashboard", href: "/", icon: Home },
     { name: "Jewelry", href: "/products", icon: Gem },
     { name: "Customers", href: "/customers", icon: Users },
+    { name: "Home", href: "/homecustomization", icon: Edit2Icon },
     { name: "Settings", href: "/settings", icon: Settings },
   ];
 

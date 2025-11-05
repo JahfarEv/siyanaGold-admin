@@ -42,6 +42,7 @@ import EditProduct from './components/EditProduct';
 import Customers from './components/Customers';
 import Settings from './components/Settings';
 import Login from './components/Login';
+import HomeCustomization from './components/HomeCustomization';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -98,6 +99,7 @@ function App() {
           <Route path="products/add" element={<AddProduct />} />
           <Route path="products/edit/:id" element={<EditProduct />} />
           <Route path="customers" element={<Customers />} />
+          <Route path="homecustomization" element={<HomeCustomization />} />
           <Route path="settings" element={<Settings />} />
         </Route>
 

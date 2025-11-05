@@ -386,8 +386,8 @@ const handleSubmit = async (e) => {
 
     console.log('Product added:', productData);
     setFormData({
-      name: '',
-      description: '',
+    name: '',
+    description: '',
     category: '',
     material: '',
     gemstone: '',

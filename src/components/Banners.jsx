@@ -247,10 +247,10 @@ const BannerManagement = () => {
       <div className="max-w-7xl mx-auto">
         {/* Header - Mobile Optimized */}
         <div className="text-center mb-8 sm:mb-12">
-          <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl sm:rounded-3xl shadow-lg sm:shadow-2xl mb-4 sm:mb-6">
+          <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-r from-amber-500 to-rose-600 rounded-2xl sm:rounded-3xl shadow-lg sm:shadow-2xl mb-4 sm:mb-6">
             <ImageIcon className="h-8 w-8 sm:h-10 sm:w-10 text-white" />
           </div>
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-700 bg-clip-text text-transparent mb-3 sm:mb-4">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-amber-500 to-rose-600 bg-clip-text text-transparent mb-3 sm:mb-4">
             Banner Management
           </h1>
           <p className="text-base sm:text-lg lg:text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed px-2">
@@ -278,7 +278,7 @@ const BannerManagement = () => {
           
           <button
             onClick={() => setShowAddModal(true)}
-            className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-4 py-3 sm:px-6 sm:py-3 rounded-xl flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transition-all duration-300 font-semibold w-full sm:w-auto text-sm sm:text-base"
+            className="bg-gradient-to-r from-amber-500 to-rose-600 hover:from-amber-600 hover:to-rose-700 text-white -white px-4 py-3 sm:px-6 sm:py-3 rounded-xl flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transition-all duration-300 font-semibold w-full sm:w-auto text-sm sm:text-base"
           >
             <Plus className="h-4 w-4 sm:h-5 sm:w-5" />
             <span>Add New Banner</span>
@@ -373,7 +373,7 @@ const BannerManagement = () => {
             <p className="text-gray-600 mb-4 sm:mb-6 text-sm sm:text-base">Get started by uploading your first banner</p>
             <button
               onClick={() => setShowAddModal(true)}
-              className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all text-sm sm:text-base w-full sm:w-auto"
+              className="bg-gradient-to-r from-amber-500 to-rose-600 hover:from-amber-600 hover:to-rose-700 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all text-sm sm:text-base w-full sm:w-auto"
             >
               Add Your First Banner
             </button>
@@ -382,7 +382,7 @@ const BannerManagement = () => {
 
         {/* Add Banner Modal - Mobile Optimized */}
         {showAddModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-2 sm:p-4 z-50 backdrop-blur-sm">
+          <div className="fixed inset-0  bg-opacity-50 flex items-center justify-center p-2 sm:p-4 z-50 backdrop-blur-sm">
             <div className="bg-white rounded-xl sm:rounded-2xl lg:rounded-3xl shadow-2xl w-full max-w-sm sm:max-w-md lg:max-w-2xl max-h-[90vh] overflow-y-auto">
               {/* Modal Header */}
               <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200">
@@ -451,7 +451,7 @@ const BannerManagement = () => {
                         Drag & Drop your image here
                       </p>
                       <p className="text-gray-500 mb-2 sm:mb-3 lg:mb-4 text-xs sm:text-sm">or</p>
-                      <label className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg sm:rounded-xl cursor-pointer hover:shadow-lg transition-all inline-block text-sm sm:text-base">
+                      <label className="bg-gradient-to-r from-amber-500 to-rose-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg sm:rounded-xl cursor-pointer hover:shadow-lg transition-all inline-block text-sm sm:text-base">
                         <span>Browse Files</span>
                         <input
                           type="file"
@@ -535,7 +535,7 @@ const BannerManagement = () => {
                   <button
                     type="submit"
                     disabled={loading || !newBanner.name || !newBanner.imageUrl}
-                    className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg sm:rounded-xl hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-sm sm:text-base order-1 sm:order-2"
+                    className="flex-1 bg-gradient-to-r from-amber-500 to-rose-600 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg sm:rounded-xl hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-sm sm:text-base order-1 sm:order-2"
                   >
                     Add Banner
                   </button>

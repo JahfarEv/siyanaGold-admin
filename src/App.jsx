@@ -31,19 +31,27 @@
 
 // export default App;
 
-
 // App.js
-import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import AdminDashboard from './components/AdminDashboard';
-import ProductsList from './components/ProductsList';
-import AddProduct from './components/AddProduct';
-import EditProduct from './components/EditProduct';
-import Customers from './components/Customers';
+import React, { useState, useEffect } from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import AdminDashboard from "./components/AdminDashboard";
+import ProductsList from "./components/ProductsList";
+import AddProduct from "./components/AddProduct";
+import EditProduct from "./components/EditProduct";
+import Customers from "./components/Customers";
 // import Orders from './components/Orders';
-import Settings from './components/Settings';
-import Login from './components/Login';
-import BannerManagement from './components/Banners';
+import Settings from "./components/Settings";
+import Login from "./components/Login";
+import BannerManagement from "./components/Banners";
+import CategoriesList from "./components/CategoryList";
+import AddCategory from "./components/AddCategory";
+import OffersList from "./components/OfferList";
+import AddOffer from "./components/AddOffer";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -51,7 +59,7 @@ function App() {
 
   useEffect(() => {
     // Check if user is logged in
-    const loggedIn = localStorage.getItem('isLoggedIn') === 'true';
+    const loggedIn = localStorage.getItem("isLoggedIn") === "true";
     setIsAuthenticated(loggedIn);
     setLoading(false);
   }, []);
@@ -73,16 +81,14 @@ function App() {
       <div className="App">
         <Routes>
           {/* Public Route */}
-          <Route 
-            path="/login" 
-            element={
-              isAuthenticated ? <Navigate to="/" /> : <Login />
-            } 
+          <Route
+            path="/login"
+            element={isAuthenticated ? <Navigate to="/" /> : <Login />}
           />
-          
+
           {/* Protected Routes */}
-          <Route 
-            path="/" 
+          <Route
+            path="/"
             element={
               <ProtectedRoute>
                 <AdminDashboard />
@@ -96,9 +102,13 @@ function App() {
             <Route path="customers" element={<Customers />} />
             {/* <Route path="orders" element={<Orders />} /> */}
             <Route path="settings" element={<Settings />} />
-            <Route path='banners' element={<BannerManagement/>} />
+            <Route path="banners" element={<BannerManagement />} />
+            <Route path="category" element={<CategoriesList />} />
+            <Route path="categories/add" element={<AddCategory />} />
+            <Route path="offers" element={<OffersList />} />
+            <Route path="offers/add" element={<AddOffer />} />
           </Route>
-          
+
           {/* Catch all route */}
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>

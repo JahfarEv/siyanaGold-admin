@@ -235,17 +235,7 @@ const AdminDashboard = () => {
 
           {/* Desktop Footer with Logout */}
           <div className="flex-shrink-0 border-t border-amber-700 p-6 space-y-4">
-            {/* User Info */}
-            <div className="flex items-center">
-              <div className="w-12 h-12 bg-gradient-to-r from-amber-400 to-rose-400 rounded-full flex items-center justify-center shadow-md">
-                <span className="text-white font-bold text-sm">JR</span>
-              </div>
-              <div className="ml-3">
-                <p className="text-sm font-medium text-white">Jahfar</p>
-                <p className="text-xs text-amber-200">Jewelry Manager</p>
-              </div>
-            </div>
-
+           
             {/* Logout Button */}
             <button
               onClick={handleLogout}

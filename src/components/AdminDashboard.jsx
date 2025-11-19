@@ -1,3 +1,4 @@
+
 // components/AdminDashboard.js
 // import React, { useState } from "react";
 // import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
@@ -258,6 +259,7 @@
 
 // components/AdminDashboard.js
 // components/AdminDashboard.js
+
 import React, { useEffect, useState } from "react";
 import { Outlet, Link, useLocation } from "react-router-dom";
 import {
@@ -271,6 +273,9 @@ import {
   Sparkles,
   LogOut,
   Edit2Icon,
+  Tv,
+  ChartColumnStacked,
+  TicketPercent
 } from "lucide-react";
 import { getAuth, signOut } from "firebase/auth";
 import Swal from "sweetalert2";
@@ -281,10 +286,13 @@ const AdminDashboard = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const navigation = [
-    { name: "Dashboard", href: "/", icon: Home },
+    // { name: "Dashboard", href: "/", icon: Home },
     { name: "Jewelry", href: "/products", icon: Gem },
+    { name: "Category", href: "/category", icon: ChartColumnStacked },
+    { name: "Offers", href: "/offers", icon: TicketPercent },
     { name: "Customers", href: "/customers", icon: Users },
     { name: "Home", href: "/homecustomization", icon: Edit2Icon },
+    { name: "Banners", href: "/banners", icon: Tv },
     { name: "Settings", href: "/settings", icon: Settings },
   ];
 
@@ -331,6 +339,9 @@ const AdminDashboard = () => {
           localStorage.clear();
           localStorage.setItem("isLoggedIn", "false");
           window.dispatchEvent(new Event("storage"));
+          localStorage.removeItem("isLoggedIn");
+          localStorage.removeItem("adminUser");
+
           Swal.fire({
             title: "Logged Out!",
             text: "You have been successfully logged out.",

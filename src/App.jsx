@@ -47,21 +47,32 @@ import Customers from "./components/Customers";
 // import Orders from './components/Orders';
 import Settings from "./components/Settings";
 import Login from "./components/Login";
+import HomeCustomization from './components/HomeCustomization';
 import BannerManagement from "./components/Banners";
 import CategoriesList from "./components/CategoryList";
 import AddCategory from "./components/AddCategory";
 import OffersList from "./components/OfferList";
 import AddOffer from "./components/AddOffer";
+import EditOffer from "./components/EditOffer";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is logged in
-    const loggedIn = localStorage.getItem("isLoggedIn") === "true";
+    // Initial check
+    const loggedIn = localStorage.getItem('isLoggedIn') === 'true';
     setIsAuthenticated(loggedIn);
     setLoading(false);
+
+    // Listen for changes in localStorage (for logout/login)
+    const handleStorageChange = () => {
+      const updatedLogin = localStorage.getItem('isLoggedIn') === 'true';
+      setIsAuthenticated(updatedLogin);
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
   // Protected Route Component
@@ -73,7 +84,7 @@ function App() {
         </div>
       );
     }
-    return isAuthenticated ? children : <Navigate to="/login" />;
+    return isAuthenticated ? children : <Navigate to="/login" replace />;
   };
 
   return (
@@ -101,12 +112,13 @@ function App() {
             <Route path="products/edit/:id" element={<EditProduct />} />
             <Route path="customers" element={<Customers />} />
             {/* <Route path="orders" element={<Orders />} /> */}
+            <Route path="homecustomization" element={<HomeCustomization />} />
             <Route path="settings" element={<Settings />} />
             <Route path="banners" element={<BannerManagement />} />
             <Route path="category" element={<CategoriesList />} />
             <Route path="categories/add" element={<AddCategory />} />
             <Route path="offers" element={<OffersList />} />
-            <Route path="offers/add" element={<AddOffer />} />
+            <Route path="offers/edit/:id" element={<EditOffer />} />
           </Route>
 
           {/* Catch all route */}

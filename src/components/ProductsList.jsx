@@ -2,15 +2,34 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Plus, Edit, Trash2, Search } from "lucide-react";
 import Swal from "sweetalert2";
-import { collection, getDocs, query, orderBy, deleteDoc, doc } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  query,
+  orderBy,
+  deleteDoc,
+  doc,
+  onSnapshot,
+  updateDoc,
+  increment,
+  serverTimestamp,
+} from "firebase/firestore";
 import { db } from "../firebase/firebase";
-
 
 const ProductsList = () => {
   const [products, setProducts] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
+  const [categories, setCategories] = useState([]);
+  const [selectedCategoryId, setSelectedCategoryId] = useState("");
+  useEffect(() => {
+    const q = query(collection(db, "categories"), orderBy("createdAt", "asc"));
+    const unsub = onSnapshot(q, (snap) => {
+      setCategories(snap.docs.map((d) => ({ id: d.id, ...(d.data() || {}) })));
+    });
+    return () => unsub();
+  }, []);
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -37,90 +56,85 @@ const ProductsList = () => {
     fetchProducts();
   }, []);
 
+  const handleDelete = async (productId) => {
+    try {
+      // Fetch the product name (optional if you already have it)
+      const product = products.find((p) => p.id === productId);
 
- const handleDelete = async (productId) => {
-  try {
-    // Fetch the product name (optional if you already have it)
-    const product = products.find((p) => p.id === productId);
+      Swal.fire({
+        title: "Are you sure?",
+        text: `You are about to delete "${
+          product?.name || "this product"
+        }". This action cannot be undone!`,
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#3085d6",
+        confirmButtonText: "Yes, delete it!",
+        cancelButtonText: "Cancel",
+        background: "#fff",
+        color: "#333",
+        iconColor: "#eab308",
+        customClass: {
+          popup: "rounded-2xl",
+          confirmButton: "rounded-xl",
+          cancelButton: "rounded-xl",
+        },
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          try {
+            await deleteDoc(doc(db, "products", productId));
 
-    Swal.fire({
-      title: "Are you sure?",
-      text: `You are about to delete "${product?.name || "this product"}". This action cannot be undone!`,
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
-      confirmButtonText: "Yes, delete it!",
-      cancelButtonText: "Cancel",
-      background: "#fff",
-      color: "#333",
-      iconColor: "#eab308",
-      customClass: {
-        popup: "rounded-2xl",
-        confirmButton: "rounded-xl",
-        cancelButton: "rounded-xl",
-      },
-    }).then(async (result) => {
-      if (result.isConfirmed) {
-        try {
-          // Delete from Firebase Firestore
-          await deleteDoc(doc(db, "products", productId));
+            // ↓ Decrement category product count
+            const categoryRef = doc(db, "categories", product.category.id);
+            await updateDoc(categoryRef, {
+              productCount: increment(-1),
+              updatedAt: serverTimestamp(),
+            });
 
-          // Update local state (optional)
-          setProducts(products.filter((p) => p.id !== productId));
+            setProducts(products.filter((p) => p.id !== productId));
 
-          // Success message
-          Swal.fire({
-            title: "Deleted!",
-            text: `"${product?.name || "Product"}" has been deleted successfully.`,
-            icon: "success",
-            confirmButtonColor: "#10b981",
-            background: "#fff",
-            color: "#333",
-            iconColor: "#10b981",
-            customClass: {
-              popup: "rounded-2xl",
-              confirmButton: "rounded-xl",
-            },
-          });
-        } catch (error) {
-          console.error("Error deleting document:", error);
-          Swal.fire({
-            title: "Error!",
-            text: "Failed to delete the product. Please try again.",
-            icon: "error",
-            confirmButtonColor: "#ef4444",
-          });
+            Swal.fire({
+              title: "Deleted!",
+              text: `"${
+                product?.name || "Product"
+              }" has been deleted successfully.`,
+              icon: "success",
+            });
+          } catch (error) {
+            console.error("Delete error:", error);
+          }
         }
-      }
-    });
-  } catch (error) {
-    console.error("Error in delete handler:", error);
-  }
-};
-const filteredProducts = products.filter((product) => {
-  const term = searchTerm.toLowerCase().trim();
+      });
+    } catch (error) {
+      console.error("Error in delete handler:", error);
+    }
+  };
+  const filteredProducts = products.filter((product) => {
+    const term = searchTerm.toLowerCase().trim();
+    const name = (product.name || "").toLowerCase();
+    const categoryName = (product.category.name || "").toLowerCase();
+    const gemstone = (product.gemstone || "").toLowerCase();
+    const material = (product.material || "").toLowerCase();
+    const price = product.price ? product.price.toString().toLowerCase() : "";
 
-  // Gracefully handle missing fields
-  const name = (product.name || "").toLowerCase();
-  const category = (product.category || "").toLowerCase();
-  const gemstone = (product.gemstone || "").toLowerCase();
-  const material = (product.material || "").toLowerCase();
-  const price = product.price ? product.price.toString().toLowerCase() : "";
+    const matchesSearch =
+      name.includes(term) ||
+      categoryName.includes(term) ||
+      gemstone.includes(term) ||
+      material.includes(term) ||
+      price.includes(term);
 
-  // Check if search term matches any key fields
-  const matchesSearch =
-    name.includes(term) ||
-    category.includes(term) ||
-    gemstone.includes(term) ||
-    material.includes(term) ||
-    price.includes(term);
+    const matchesFilter = filter === "all" || product.status === filter;
 
-  // Optional: filter by active/inactive status if you use it
-  const matchesFilter = filter === "all" || product.status === filter;
+    const selectedCat = categories.find((c) => c.id === selectedCategoryId);
+    const matchesCategory =
+      !selectedCategoryId ||
+      product.categoryId === selectedCategoryId ||
+      (selectedCat && categoryName === (selectedCat.name || "").toLowerCase());
 
-  return matchesSearch && matchesFilter;
-});
+    return matchesSearch && matchesFilter && matchesCategory;
+  });
 
   const getGemstoneColor = (gemstone) => {
     const colors = {
@@ -168,6 +182,18 @@ const filteredProducts = products.filter((product) => {
           </div>
 
           <div className="flex items-center space-x-4">
+            <select
+              value={selectedCategoryId}
+              onChange={(e) => setSelectedCategoryId(e.target.value)}
+              className="px-4 py-3 border border-amber-200 rounded-xl bg-amber-50"
+            >
+              <option value="">All Categories</option>
+              {categories.map((cat) => (
+                <option key={cat.id} value={cat.id}>
+                  {cat.name}
+                </option>
+              ))}
+            </select>
             <Link
               to="/products/add"
               className="bg-gradient-to-r from-amber-500 to-rose-600 hover:from-amber-600 hover:to-rose-700 text-white px-6 py-3 rounded-xl flex items-center shadow-lg hover:shadow-xl transition-all duration-200"
@@ -210,7 +236,7 @@ const filteredProducts = products.filter((product) => {
 
               <div className="flex items-center justify-center space-x-2 mb-3">
                 <span className="text-xs font-medium text-amber-600 bg-amber-50 px-2 py-1 rounded">
-                  {product.category}
+                  {product.category.name}
                 </span>
                 <span className="text-xs font-medium text-gray-600 bg-gray-50 px-2 py-1 rounded">
                   {product.gemstone}

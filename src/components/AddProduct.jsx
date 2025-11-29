@@ -1,9 +1,17 @@
 // components/AddProduct.js
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Save, Gem, Sparkles, Upload, X } from "lucide-react";
 import { uploadToCloudinary } from "../cloudinary/upload";
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  getDocs,
+  serverTimestamp,
+  doc,
+  updateDoc,
+  increment,
+} from "firebase/firestore";
 import { db } from "../firebase/firebase";
 import LoadingOverlay from "./ui/LoadingOverlay";
 
@@ -24,15 +32,25 @@ const AddProduct = () => {
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [imageUploading, setImageUploading] = useState(false);
+  const [categories, setCategories] = useState([]);
 
-  const categories = [
-    "Rings",
-    "Necklaces",
-    "Earrings",
-    "Bracelets",
-    "Watches",
-    "Brooches",
-  ];
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const querySnap = await getDocs(collection(db, "categories"));
+        const list = querySnap.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setCategories(list);
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+        alert("Failed to load categories");
+      }
+    };
+
+    fetchCategories();
+  }, []);
   const materials = [
     "Platinum",
     "White Gold",
@@ -53,10 +71,23 @@ const AddProduct = () => {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
+
+    // If the field is category, store both id and name
+    if (name === "category") {
+      const selectedCat = categories.find((cat) => cat.id === value);
+      setFormData((prev) => ({
+        ...prev,
+        category: {
+          id: selectedCat?.id || "",
+          name: selectedCat?.name || "",
+        },
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: type === "checkbox" ? checked : value,
+      }));
+    }
   };
 
   const handleImageUpload = async (e) => {
@@ -94,7 +125,6 @@ const AddProduct = () => {
     setImageUploading(true);
 
     try {
-      // Upload all images to Cloudinary and get their URLs
       const uploadedImages = await Promise.all(
         images.map(async (img) => {
           const url = await uploadToCloudinary(
@@ -105,40 +135,46 @@ const AddProduct = () => {
         })
       );
 
-      setImageUploading(false);
-
       const productData = {
         ...formData,
         images: uploadedImages,
         createdAt: serverTimestamp(),
       };
 
-      // Save product to Firebase Firestore
       await addDoc(collection(db, "products"), productData);
 
-    console.log('Product added:', productData);
-    setFormData({
-    name: '',
-    description: '',
-    category: '',
-    material: '',
-    gemstone: '',
-    weight: '',
-    price: '',
-    stock: '',
-    status: 'active',
-    featured: false
-  })
-  setImages([])
-  setLoading(false);
-    // navigate('/products');
-  } catch (error) {
-    console.error('Error adding product:', error);
-    alert('Failed to add product. Check console.');
-    setLoading(false);
-    setImageUploading(false);
-  }
-};
+      // 🔥 Update category product count
+      const categoryRef = doc(db, "categories", formData.category.id);
+      await updateDoc(categoryRef, {
+        productCount: increment(1),
+        updatedAt: serverTimestamp(),
+      });
+
+      setFormData({
+        name: "",
+        description: "",
+        category: "",
+        material: "",
+        gemstone: "",
+        weight: "",
+        price: "",
+        stock: "",
+        status: "active",
+        featured: false,
+      });
+
+      setImages([]);
+      setLoading(false);
+      navigate("/products");
+    } catch (error) {
+      console.error("Error adding product:", error);
+      alert("Failed to add product. Check console.");
+      setLoading(false);
+      setImageUploading(false);
+    }
+  };
+
+  console.log(categories, "cat");
 
   return (
     <div>
@@ -287,15 +323,15 @@ const AddProduct = () => {
                   </label>
                   <select
                     name="category"
-                    value={formData.category}
+                    value={formData.category.id || ""}
                     onChange={handleChange}
                     required
                     className="w-full px-4 py-3 border border-amber-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-amber-50"
                   >
                     <option value="">Select Category</option>
-                    {categories.map((cat) => (
-                      <option key={cat} value={cat}>
-                        {cat}
+                    {categories?.map((cat) => (
+                      <option key={cat.id} value={cat.id}>
+                        {cat.name}
                       </option>
                     ))}
                   </select>

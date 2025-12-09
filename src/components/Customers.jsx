@@ -231,6 +231,94 @@ const Customers = () => {
                         )}
                       </div>
                     </div>
+
+                    {/* User Orders */}
+                    <div className="mt-6">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                        Order History
+                      </h3>
+                      <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
+                        {selectedCustomer.orders && selectedCustomer.orders.length > 0 ? (
+                          selectedCustomer.orders.map((order, orderIndex) => (
+                            <div
+                              key={orderIndex}
+                              className="bg-green-50 rounded-xl border border-green-100 p-4"
+                            >
+                              {/* Order Header */}
+                              <div className="flex items-center justify-between mb-3 pb-2 border-b border-green-200">
+                                <div>
+                                  <span className="text-sm font-semibold text-gray-900">
+                                    Order #{order.orderId || order.id}
+                                  </span>
+                                  <span className="text-xs text-gray-500 ml-2">
+                                    {order.createdAt?.toDate ? 
+                                      new Date(order.createdAt.toDate()).toLocaleDateString() : 
+                                      'N/A'}
+                                  </span>
+                                </div>
+                                <span className={`text-xs px-2 py-1 rounded-full ${
+                                  order.status === 'completed' ? 'text-green-600 bg-green-100' :
+                                  order.status === 'pending' ? 'text-amber-600 bg-amber-100' :
+                                  'text-gray-600 bg-gray-100'
+                                }`}>
+                                  {order.status || 'Pending'}
+                                </span>
+                              </div>
+
+                              {/* Order Items */}
+                              <div className="space-y-2">
+                                {order.items && order.items.length > 0 ? (
+                                  order.items.map((item, itemIndex) => (
+                                    <div
+                                      key={itemIndex}
+                                      className="flex items-center space-x-3 bg-white rounded-lg p-2"
+                                    >
+                                      {/* Product Image */}
+                                      {item.images && item.images.length > 0 && (
+                                        <img
+                                          src={item.images[0].url}
+                                          alt={item.name}
+                                          className="w-12 h-12 object-cover rounded-lg"
+                                        />
+                                      )}
+                                      {/* Product Details */}
+                                      <div className="flex-1">
+                                        <span className="text-sm font-medium text-gray-900 block">
+                                          {item.name}
+                                        </span>
+                                        <span className="text-xs text-gray-500">
+                                          ${item.price} x {item.quantity}
+                                        </span>
+                                      </div>
+                                      {/* Item Total */}
+                                      <span className="text-sm font-semibold text-gray-900">
+                                        ${(item.price * item.quantity).toFixed(2)}
+                                      </span>
+                                    </div>
+                                  ))
+                                ) : (
+                                  <div className="text-center py-2 text-gray-500 text-sm">
+                                    No items in this order
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Order Total */}
+                              <div className="flex justify-between items-center mt-3 pt-2 border-t border-green-200">
+                                <span className="text-sm font-medium text-gray-600">Total:</span>
+                                <span className="text-base font-bold text-gray-900">
+                                  ${order.totalAmount || 0}
+                                </span>
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="text-center py-8 text-gray-500">
+                            No orders yet
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>

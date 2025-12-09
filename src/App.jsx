@@ -51,6 +51,8 @@ import HomeCustomization from './components/HomeCustomization';
 import BannerManagement from "./components/Banners";
 import CategoriesList from "./components/CategoryList";
 import AddCategory from "./components/AddCategory";
+import EditCategory from "./components/EditCategory";
+import Orders from "./components/Ordes";
 import OffersList from "./components/OfferList";
 import AddOffer from "./components/AddOffer";
 import EditOffer from "./components/EditOffer";
@@ -111,12 +113,13 @@ function App() {
             <Route path="products/add" element={<AddProduct />} />
             <Route path="products/edit/:id" element={<EditProduct />} />
             <Route path="customers" element={<Customers />} />
-            {/* <Route path="orders" element={<Orders />} /> */}
+            <Route path="orders" element={<Orders />} />
             <Route path="homecustomization" element={<HomeCustomization />} />
             <Route path="settings" element={<Settings />} />
             <Route path="banners" element={<BannerManagement />} />
             <Route path="category" element={<CategoriesList />} />
             <Route path="categories/add" element={<AddCategory />} />
+            <Route path="categories/edit/:id" element={<EditCategory />} />
             <Route path="offers" element={<OffersList />} />
             <Route path="offers/edit/:id" element={<EditOffer />} />
           </Route>

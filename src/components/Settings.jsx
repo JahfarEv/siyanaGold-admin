@@ -135,14 +135,12 @@ const Settings = () => {
     100;
 
   return (
-    <div className="min-h-screen py-8 px-4">
+    <div className="min-h-screen px-4 overflow-hidden">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-amber-500 to-rose-600 rounded-3xl shadow-2xl mb-6">
-            <UserCheck className="h-10 w-10 text-white" />
-          </div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-amber-600 to-rose-700 bg-clip-text text-transparent mb-4">
+          
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-amber-600 to-rose-700 bg-clip-text text-transparent mb-4">
             Account Security
           </h1>
           <p className="hidden md:block text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
@@ -154,7 +152,7 @@ const Settings = () => {
         {/* Security Card */}
         <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl border border-amber-100/50 p-8 max-w-2xl mx-auto">
           {/* Card Header */}
-          <div className="flex items-center space-x-4 mb-8 pb-6 border-b border-amber-100">
+          <div className="flex items-center space-x-4 mb-4 pb-6 border-b border-amber-100">
             <div className="w-16 h-16 bg-gradient-to-r from-amber-500 to-rose-600 rounded-2xl flex items-center justify-center shadow-lg">
               <Shield className="h-8 w-8 text-white" />
             </div>
@@ -172,7 +170,7 @@ const Settings = () => {
           </div>
 
           <form onSubmit={handlePasswordSubmit}>
-            <div className="space-y-8 mb-10">
+            <div className="space-y-8 mb-6">
               {/* Current Password */}
               <div className="group">
                 <label className="block text-lg font-semibold text-gray-800 mb-3">

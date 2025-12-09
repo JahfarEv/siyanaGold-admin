@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Save, Gem, Sparkles } from 'lucide-react';
-import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc, collection, getDocs } from "firebase/firestore";
 import { db } from "../firebase/firebase";
 import LoadingOverlay from './ui/LoadingOverlay';
 
@@ -23,42 +23,70 @@ const EditProduct = () => {
   });
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
+  const [categories, setCategories] = useState([]);
 
-  const categories = ['Rings', 'Necklaces', 'Earrings', 'Bracelets', 'Watches', 'Brooches'];
+
   const materials = ['Platinum', 'White Gold', 'Yellow Gold', 'Rose Gold', 'Sterling Silver'];
   const gemstones = ['Diamond', 'Pearl', 'Sapphire', 'Ruby', 'Emerald', 'Amethyst', 'Topaz', 'Opal'];
 
   useEffect(() => {
-  const fetchProduct = async () => {
-    try {
-      setInitialLoading(true);
-      const docRef = doc(db, "products", id);
-      const docSnap = await getDoc(docRef);
-
-      if (docSnap.exists()) {
-        setFormData(docSnap.data());
-      } else {
-        console.error("No such product!");
-        navigate("/products");
+    const fetchCategories = async () => {
+      try {
+        const querySnap = await getDocs(collection(db, "categories"));
+        const list = querySnap.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setCategories(list);
+      } catch (error) {
+        console.error("Error fetching categories:", error);
       }
-    } catch (error) {
-      console.error("Error fetching product:", error);
-    } finally {
-      setInitialLoading(false);
-    }
-  };
+    };
 
-  if (id) {
-    fetchProduct();
-  }
-}, [id, navigate]);
+    const fetchProduct = async () => {
+      try {
+        setInitialLoading(true);
+        const docRef = doc(db, "products", id);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          setFormData(docSnap.data());
+        } else {
+          console.error("No such product!");
+          navigate("/products");
+        }
+      } catch (error) {
+        console.error("Error fetching product:", error);
+      } finally {
+        setInitialLoading(false);
+      }
+    };
+
+    fetchCategories();
+    if (id) {
+      fetchProduct();
+    }
+  }, [id, navigate]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
+
+    // If the field is category, store both id and name
+    if (name === "category") {
+      const selectedCat = categories.find((cat) => cat.id === value);
+      setFormData((prev) => ({
+        ...prev,
+        category: {
+          id: selectedCat?.id || "",
+          name: selectedCat?.name || "",
+        },
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: type === 'checkbox' ? checked : value
+      }));
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -153,13 +181,16 @@ const EditProduct = () => {
                   </label>
                   <select
                     name="category"
-                    value={formData.category}
+                    value={formData.category?.id || formData.category || ""}
                     onChange={handleChange}
                     required
                     className="w-full px-4 py-3 border border-amber-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-amber-50"
                   >
-                    {categories.map(cat => (
-                      <option key={cat} value={cat}>{cat}</option>
+                    <option value="">Select Category</option>
+                    {categories?.map((cat) => (
+                      <option key={cat.id} value={cat.id}>
+                        {cat.name}
+                      </option>
                     ))}
                   </select>
                 </div>

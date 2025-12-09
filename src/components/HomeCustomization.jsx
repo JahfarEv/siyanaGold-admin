@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Save, Image, Gem } from "lucide-react";
-import { db } from "../firebase/firebase";
+import { db, storage } from "../firebase/firebase";
 import {
   collection,
   getDocs,
@@ -9,50 +8,51 @@ import {
   query,
   where,
   limit,
+  addDoc,
 } from "firebase/firestore";
-import LoadingOverlay from "./ui/LoadingOverlay";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import moment from "moment";
+import { Gem, Image, Save } from "lucide-react";
+import LoadingOverlay from "./ui/LoadingOverlay";
+import { uploadToCloudinary } from "../cloudinary/upload";
 
 const HomeCustomization = () => {
-  // 🔹 States
   const [carouselItems, setCarouselItems] = useState([]);
-  const [goldRate, setGoldRate] = useState({ perGram: "", perPavan: "", date: "", id: "" });
+  const [goldRate, setGoldRate] = useState({
+    Gold_24: "",
+    Gold_22: "",
+    Gold_18: "",
+  });
   const [loading, setLoading] = useState(false);
-
-  // 📅 Today’s date
+  const [pendingImages, setPendingImages] = useState({});
   const todayDate = moment().format("YYYY-MM-DD");
 
-  // 🔹 Load existing data
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // Fetch Carousel Items
-        const carouselSnapshot = await getDocs(collection(db, "homeCarousel"));
-        const carouselData = carouselSnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        setCarouselItems(carouselData);
+        // Load Carousel Items
+        const snapshot = await getDocs(collection(db, "homeCarousel"));
+        setCarouselItems(snapshot.docs.map((d) => ({ id: d.id, ...d.data() })));
 
-        // Fetch Gold Rate for today
-        const goldQuery = query(
+        // Load Gold Rate
+        const q = query(
           collection(db, "goldRates"),
           where("date", "==", todayDate),
           limit(1)
         );
-        const goldSnapshot = await getDocs(goldQuery);
+        const goldSnapshot = await getDocs(q);
         if (!goldSnapshot.empty) {
-          const docData = goldSnapshot.docs[0].data();
+          const data = goldSnapshot.docs[0].data();
           setGoldRate({
-            perGram: docData.perGram,
-            perPavan: docData.perPavan,
-            date: docData.date,
+            perGram: data.perGram,
+            perPavan: data.perPavan,
+            date: data.date,
             id: goldSnapshot.docs[0].id,
           });
         }
-      } catch (error) {
-        console.error("Error loading data:", error);
+      } catch (err) {
+        console.log("Fetch error:", err);
       } finally {
         setLoading(false);
       }
@@ -60,56 +60,82 @@ const HomeCustomization = () => {
     fetchData();
   }, []);
 
-  // 🔹 Update Carousel Fields
+  // 🔹 On Change carousel fields
   const handleCarouselChange = (id, field, value) => {
     setCarouselItems((prev) =>
       prev.map((item) => (item.id === id ? { ...item, [field]: value } : item))
     );
   };
 
-  // 🔹 Handle Gold Rate Input
-  const handleGoldRateChange = (e) => {
-    const { name, value } = e.target;
-    setGoldRate((prev) => ({ ...prev, [name]: value }));
+  const handleImageChange = (id, file) => {
+    if (!file) return;
+
+    // Live preview
+    const previewUrl = URL.createObjectURL(file);
+    setCarouselItems((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, previewUrl } : item))
+    );
+
+    // Store file to upload later
+    setPendingImages((prev) => ({ ...prev, [id]: file }));
   };
 
-  // 🔹 Update Carousel Data
+  // 🔹 Update all carousel text fields
   const handleUpdateCarousel = async () => {
     setLoading(true);
     try {
       for (const item of carouselItems) {
-        const ref = doc(db, "homeCarousel", item.id);
-        await updateDoc(ref, {
+        let finalImageUrl = item.url;
+
+        // If image changed → upload to Cloudinary
+        if (pendingImages[item.id]) {
+          finalImageUrl = await uploadToCloudinary(pendingImages[item.id]);
+        }
+
+        await updateDoc(doc(db, "homeCarousel", item.id), {
           title: item.title,
           description: item.description,
+          Button: item.Button || "",
+          route: item.route || "",
+          url: finalImageUrl,
+          updatedAt: new Date(),
         });
       }
-      alert("Carousel updated successfully!");
-    } catch (error) {
-      console.error("Error updating carousel:", error);
-      alert("Failed to update carousel.");
+
+      alert("Carousel updated successfully");
+      setPendingImages({});
+    } catch (err) {
+      console.error(err);
+      alert("Update failed");
     } finally {
       setLoading(false);
     }
   };
 
-  // 🔹 Update Gold Rate
+  // 🔹 Gold rate updates
+  const handleGoldRateChange = (e) => {
+    setGoldRate({ ...goldRate, [e.target.name]: e.target.value });
+  };
+
   const handleUpdateGoldRate = async () => {
-    if (!goldRate.id) return alert("Gold rate entry not found for today!");
-    if (!goldRate.perGram || !goldRate.perPavan)
-      return alert("Please fill both gold rate values.");
+    if (!goldRate.Gold_24 || !goldRate.Gold_22 || !goldRate.Gold_18) {
+      return alert("Please enter all gold rates!");
+    }
 
     setLoading(true);
+
     try {
-      await updateDoc(doc(db, "goldRates", goldRate.id), {
-        perGram: goldRate.perGram,
-        perPavan: goldRate.perPavan,
-        updatedAt: new Date(),
+      await addDoc(collection(db, "goldRates"), {
+        Gold_24: goldRate.Gold_24,
+        Gold_22: goldRate.Gold_22,
+        Gold_18: goldRate.Gold_18,
+        createdAt: new Date(),
       });
-      alert("Gold rate updated successfully!");
-    } catch (error) {
-      console.error("Error updating gold rate:", error);
-      alert("Failed to update gold rate.");
+
+      alert("Gold rate created successfully");
+    } catch (err) {
+      console.error("Error creating gold rate:", err);
+      alert("Failed to create gold rate");
     } finally {
       setLoading(false);
     }
@@ -127,7 +153,9 @@ const HomeCustomization = () => {
           </div>
           <div>
             <h2 className="text-xl font-bold text-white">Home Carousel</h2>
-            <p className="text-amber-100">Edit carousel titles and descriptions only</p>
+            <p className="text-amber-100">
+              Edit carousel titles and descriptions only
+            </p>
           </div>
         </div>
 
@@ -140,31 +168,71 @@ const HomeCustomization = () => {
                   className="relative bg-amber-50 rounded-xl p-3 border border-amber-200"
                 >
                   <img
-                    src={item.url}
-                    alt={item.title || "Carousel"}
-                    className="w-full h-28 object-cover rounded-lg mb-3"
+                    src={item.previewUrl || item.url}
+                    alt={item.title}
+                    className="w-full h-28 object-cover rounded-lg mb-3 border cursor-pointer"
+                    onClick={() =>
+                      document.getElementById(`file-${item.id}`).click()
+                    }
                   />
+
+                  <input
+                    id={`file-${item.id}`}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) =>
+                      handleImageChange(item.id, e.target.files[0])
+                    }
+                  />
+
                   <input
                     type="text"
                     placeholder="Title"
                     value={item.title}
-                    onChange={(e) => handleCarouselChange(item.id, "title", e.target.value)}
+                    onChange={(e) =>
+                      handleCarouselChange(item.id, "title", e.target.value)
+                    }
                     className="w-full mb-2 px-3 py-2 text-sm border border-amber-200 rounded-lg bg-white"
                   />
                   <textarea
                     placeholder="Description"
                     value={item.description}
                     onChange={(e) =>
-                      handleCarouselChange(item.id, "description", e.target.value)
+                      handleCarouselChange(
+                        item.id,
+                        "description",
+                        e.target.value
+                      )
                     }
                     className="w-full px-3 py-2 text-sm border border-amber-200 rounded-lg bg-white"
                     rows={2}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Button"
+                    value={item.Button}
+                    onChange={(e) =>
+                      handleCarouselChange(item.id, "Button", e.target.value)
+                    }
+                    className="w-full mb-2 px-3 py-2 text-sm border border-amber-200 rounded-lg bg-white"
+                  />
+                  <input
+                    type="text"
+                    placeholder="route"
+                    value={item.route}
+                    onChange={(e) =>
+                      handleCarouselChange(item.id, "route", e.target.value)
+                    }
+                    className="w-full mb-2 px-3 py-2 text-sm border border-amber-200 rounded-lg bg-white"
                   />
                 </div>
               ))}
             </div>
           ) : (
-            <p className="text-gray-500 text-center">No carousel items found.</p>
+            <p className="text-gray-500 text-center">
+              No carousel items found.
+            </p>
           )}
 
           <button
@@ -191,7 +259,9 @@ const HomeCustomization = () => {
         <div className="p-6 space-y-6">
           <div className="grid grid-cols-3 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Date</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Date
+              </label>
               <input
                 type="text"
                 value={todayDate}
@@ -202,12 +272,12 @@ const HomeCustomization = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Price per Gram (₹)
+                24K Gold (₹)
               </label>
               <input
                 type="number"
-                name="perGram"
-                value={goldRate.perGram}
+                name="Gold_24"
+                value={goldRate.Gold_24}
                 onChange={handleGoldRateChange}
                 className="w-full px-4 py-3 border border-amber-200 rounded-xl focus:ring-2 focus:ring-amber-500 bg-amber-50 transition"
               />
@@ -215,12 +285,24 @@ const HomeCustomization = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Price per 8 Gram (₹)
+                22K Gold (₹)
               </label>
               <input
                 type="number"
-                name="perPavan"
-                value={goldRate.perPavan}
+                name="Gold_22"
+                value={goldRate.Gold_22}
+                onChange={handleGoldRateChange}
+                className="w-full px-4 py-3 border border-amber-200 rounded-xl focus:ring-2 focus:ring-amber-500 bg-amber-50 transition"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                18K Gold (₹)
+              </label>
+              <input
+                type="number"
+                name="Gold_18"
+                value={goldRate.Gold_18}
                 onChange={handleGoldRateChange}
                 className="w-full px-4 py-3 border border-amber-200 rounded-xl focus:ring-2 focus:ring-amber-500 bg-amber-50 transition"
               />

@@ -53,6 +53,7 @@ import CategoriesList from "./components/CategoryList";
 import AddCategory from "./components/AddCategory";
 import OffersList from "./components/OfferList";
 import AddOffer from "./components/AddOffer";
+import EditOffer from "./components/EditOffer";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -117,7 +118,7 @@ function App() {
             <Route path="category" element={<CategoriesList />} />
             <Route path="categories/add" element={<AddCategory />} />
             <Route path="offers" element={<OffersList />} />
-            <Route path="offers/add" element={<AddOffer />} />
+            <Route path="offers/edit/:id" element={<EditOffer />} />
           </Route>
 
           {/* Catch all route */}

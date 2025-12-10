@@ -1,9 +1,10 @@
 // components/EditProduct.js
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Save, Gem, Sparkles } from 'lucide-react';
-import { doc, getDoc, updateDoc, collection, getDocs } from "firebase/firestore";
+import { ArrowLeft, Save, Gem, Sparkles, Upload, X } from 'lucide-react';
+import { doc, getDoc, updateDoc, collection, getDocs, increment, serverTimestamp } from "firebase/firestore";
 import { db } from "../firebase/firebase";
+import { uploadToCloudinary } from "../cloudinary/upload";
 import LoadingOverlay from './ui/LoadingOverlay';
 
 const EditProduct = () => {
@@ -21,6 +22,9 @@ const EditProduct = () => {
     status: 'active',
     featured: false
   });
+  const [images, setImages] = useState([]);
+  const [imageUploading, setImageUploading] = useState(false);
+  const [initialCategory, setInitialCategory] = useState(null);
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [categories, setCategories] = useState([]);
@@ -50,7 +54,17 @@ const EditProduct = () => {
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
-          setFormData(docSnap.data());
+          const data = docSnap.data();
+          setFormData(data);
+          // Normalize existing images with IDs for state management
+          const existingImages = (data.images || []).map(img => ({
+            ...img,
+            id: Math.random().toString(36).substr(2, 9), // Assign temp ID for UI handling
+            preview: img.url, // Standardize preview property
+            isExisting: true // Flag to identify existing images
+          }));
+          setImages(existingImages);
+          setInitialCategory(data.category);
         } else {
           console.error("No such product!");
           navigate("/products");
@@ -89,25 +103,97 @@ const EditProduct = () => {
     }
   };
 
+  const handleImageUpload = async (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length === 0) return;
+
+    setImageUploading(true);
+
+    try {
+      const newImages = files.map((file) => ({
+        id: Math.random().toString(36).substr(2, 9),
+        file,
+        preview: URL.createObjectURL(file),
+        name: file.name,
+      }));
+
+      setImages((prev) => [...prev, ...newImages]);
+    } catch (error) {
+      console.error("Error uploading images:", error);
+      alert("Failed to add images. Check console.");
+    } finally {
+      setImageUploading(false);
+    }
+  };
+
+  const removeImage = (id) => {
+    setImages((prev) => prev.filter((img) => img.id !== id));
+  };
+
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  setLoading(true);
+    e.preventDefault();
+    if (images.length === 0) {
+      alert("Please upload at least one image.");
+      return;
+    }
+    setLoading(true);
+    setImageUploading(true);
 
-  try {
-    const docRef = doc(db, "products", id);
-    await updateDoc(docRef, {
-      ...formData,
-      updatedAt: new Date(),
-    });
+    try {
+      // 1. Upload new images (those with 'file' property)
+      const finalImages = await Promise.all(
+        images.map(async (img) => {
+          // Case 1: New Image (has file to upload)
+          if (img.file) {
+             const url = await uploadToCloudinary(
+              img.file,
+              `products/${formData.category.name || "others"}`
+            );
+            return { name: img.name, url };
+          }
+          // Case 2: Existing Image (preserve URL and name)
+          return { 
+            name: img.name || 'Product Image', 
+            url: img.url || img.preview 
+          }; 
+        })
+      );
 
-    console.log("Product updated:", formData);
-    navigate("/products");
-  } catch (error) {
-    console.error("Error updating product:", error);
-  } finally {
-    setLoading(false);
-  }
-};
+      const docRef = doc(db, "products", id);
+      
+      // 2. Check for category change
+      if (initialCategory && formData.category && initialCategory.id !== formData.category.id) {
+         // Decrement old category
+         const oldCatRef = doc(db, "categories", initialCategory.id);
+         await updateDoc(oldCatRef, {
+           productCount: increment(-1),
+           updatedAt: serverTimestamp()
+         });
+
+         // Increment new category
+         const newCatRef = doc(db, "categories", formData.category.id);
+         await updateDoc(newCatRef, {
+           productCount: increment(1),
+           updatedAt: serverTimestamp()
+         });
+      }
+
+      await updateDoc(docRef, {
+        ...formData,
+        images: finalImages,
+        updatedAt: serverTimestamp(),
+      });
+
+      console.log("Product updated:", formData);
+      navigate("/products");
+    } catch (error) {
+      console.error("Error updating product:", error);
+      alert("Failed to update product.");
+    } finally {
+      setLoading(false);
+      setImageUploading(false);
+    }
+  };
 
 
 
@@ -145,8 +231,65 @@ const EditProduct = () => {
 
         <form onSubmit={handleSubmit} className="p-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Basic Information */}
+            {/* Basic Information & Images */}
             <div className="space-y-6">
+               {/* Image Upload Section */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-3">
+                  Product Images *
+                </label>
+                <div className="border-2 border-dashed border-amber-200 rounded-2xl p-6 text-center bg-amber-50 hover:bg-amber-100 transition-colors duration-200">
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                    id="image-edit-upload"
+                  />
+                  <label
+                    htmlFor="image-edit-upload"
+                    className="cursor-pointer flex flex-col items-center justify-center space-y-3"
+                  >
+                    <div className="w-12 h-12 bg-amber-500 rounded-xl flex items-center justify-center">
+                      <Upload className="h-6 w-6 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-700">
+                        {imageUploading ? "Uploading..." : "Click to upload images"}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        PNG, JPG, WEBP up to 10MB
+                      </p>
+                    </div>
+                  </label>
+                </div>
+
+                {/* Previews */}
+                 {images.length > 0 && (
+                  <div className="mt-4">
+                    <div className="grid grid-cols-3 gap-3">
+                      {images.map((image, idx) => (
+                        <div key={image.id || idx} className="relative group">
+                          <img
+                            src={image.preview || image.url}
+                            alt="Preview"
+                            className="w-full h-24 object-cover rounded-lg border border-amber-200"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeImage(image.id)}
+                            className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Jewelry Name *

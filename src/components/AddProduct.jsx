@@ -114,6 +114,10 @@ const AddProduct = () => {
     }
   };
 
+  const removeImage = (id) => {
+    setImages((prev) => prev.filter((img) => img.id !== id));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (images.length === 0) {

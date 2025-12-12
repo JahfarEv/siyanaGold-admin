@@ -89,8 +89,8 @@ const EditProduct = () => {
           const existingImages = (data.images || []).map((img) => ({
             ...img,
             id: Math.random().toString(36).substr(2, 9), // Assign temp ID for UI handling
-            preview: img.url, // Standardize preview property
-            isExisting: true, // Flag to identify existing images
+            preview: img.url,
+            isExisting: true,
           }));
           setImages(existingImages);
           setInitialCategory(normalizedCategory);
@@ -202,12 +202,17 @@ const EditProduct = () => {
           : formData.category?.id;
 
       if (oldCatId && newCatId && oldCatId !== newCatId) {
-        // Decrement old category
         const oldCatRef = doc(db, "categories", oldCatId);
-        await updateDoc(oldCatRef, {
-          productCount: increment(-1),
-          updatedAt: serverTimestamp(),
-        });
+        const oldCatSnap = await getDoc(oldCatRef);
+        const oldCatData = oldCatSnap.data();
+
+        // Prevent negative value
+        if (oldCatData.productCount > 0) {
+          await updateDoc(oldCatRef, {
+            productCount: increment(-1),
+            updatedAt: serverTimestamp(),
+          });
+        }
 
         // Increment new category
         const newCatRef = doc(db, "categories", newCatId);

@@ -1,26 +1,34 @@
 // components/EditProduct.js
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Save, Gem, Sparkles, Upload, X } from 'lucide-react';
-import { doc, getDoc, updateDoc, collection, getDocs, increment, serverTimestamp } from "firebase/firestore";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { ArrowLeft, Save, Gem, Sparkles, Upload, X } from "lucide-react";
+import {
+  doc,
+  getDoc,
+  updateDoc,
+  collection,
+  getDocs,
+  increment,
+  serverTimestamp,
+} from "firebase/firestore";
 import { db } from "../firebase/firebase";
 import { uploadToCloudinary } from "../cloudinary/upload";
-import LoadingOverlay from './ui/LoadingOverlay';
+import LoadingOverlay from "./ui/LoadingOverlay";
 
 const EditProduct = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    category: '',
-    material: '',
-    gemstone: '',
-    weight: '',
-    price: '',
-    stock: '',
-    status: 'active',
-    featured: false
+    name: "",
+    description: "",
+    category: "",
+    material: "",
+    gemstone: "",
+    weight: "",
+    price: "",
+    stock: "",
+    status: "active",
+    featured: false,
   });
   const [images, setImages] = useState([]);
   const [imageUploading, setImageUploading] = useState(false);
@@ -29,9 +37,23 @@ const EditProduct = () => {
   const [initialLoading, setInitialLoading] = useState(true);
   const [categories, setCategories] = useState([]);
 
-
-  const materials = ['Platinum', 'White Gold', 'Yellow Gold', 'Rose Gold', 'Sterling Silver'];
-  const gemstones = ['Diamond', 'Pearl', 'Sapphire', 'Ruby', 'Emerald', 'Amethyst', 'Topaz', 'Opal'];
+  const materials = [
+    "Platinum",
+    "White Gold",
+    "Yellow Gold",
+    "Rose Gold",
+    "Sterling Silver",
+  ];
+  const gemstones = [
+    "Diamond",
+    "Pearl",
+    "Sapphire",
+    "Ruby",
+    "Emerald",
+    "Amethyst",
+    "Topaz",
+    "Opal",
+  ];
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -55,16 +77,23 @@ const EditProduct = () => {
 
         if (docSnap.exists()) {
           const data = docSnap.data();
-          setFormData(data);
+          const normalizedCategory =
+            typeof data.category === "string"
+              ? { id: data.category, name: "" }
+              : data.category;
+          setFormData({
+            ...data,
+            category: normalizedCategory,
+          });
           // Normalize existing images with IDs for state management
-          const existingImages = (data.images || []).map(img => ({
+          const existingImages = (data.images || []).map((img) => ({
             ...img,
             id: Math.random().toString(36).substr(2, 9), // Assign temp ID for UI handling
             preview: img.url, // Standardize preview property
-            isExisting: true // Flag to identify existing images
+            isExisting: true, // Flag to identify existing images
           }));
           setImages(existingImages);
-          setInitialCategory(data.category);
+          setInitialCategory(normalizedCategory);
         } else {
           console.error("No such product!");
           navigate("/products");
@@ -96,9 +125,9 @@ const EditProduct = () => {
         },
       }));
     } else {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        [name]: type === 'checkbox' ? checked : value
+        [name]: type === "checkbox" ? checked : value,
       }));
     }
   };
@@ -145,37 +174,47 @@ const EditProduct = () => {
         images.map(async (img) => {
           // Case 1: New Image (has file to upload)
           if (img.file) {
-             const url = await uploadToCloudinary(
+            const url = await uploadToCloudinary(
               img.file,
               `products/${formData.category.name || "others"}`
             );
             return { name: img.name, url };
           }
           // Case 2: Existing Image (preserve URL and name)
-          return { 
-            name: img.name || 'Product Image', 
-            url: img.url || img.preview 
-          }; 
+          return {
+            name: img.name || "Product Image",
+            url: img.url || img.preview,
+          };
         })
       );
 
       const docRef = doc(db, "products", id);
-      
-      // 2. Check for category change
-      if (initialCategory && formData.category && initialCategory.id !== formData.category.id) {
-         // Decrement old category
-         const oldCatRef = doc(db, "categories", initialCategory.id);
-         await updateDoc(oldCatRef, {
-           productCount: increment(-1),
-           updatedAt: serverTimestamp()
-         });
 
-         // Increment new category
-         const newCatRef = doc(db, "categories", formData.category.id);
-         await updateDoc(newCatRef, {
-           productCount: increment(1),
-           updatedAt: serverTimestamp()
-         });
+      // 2. Check for category change
+      const oldCatId =
+        typeof initialCategory === "string"
+          ? initialCategory
+          : initialCategory?.id;
+
+      const newCatId =
+        typeof formData.category === "string"
+          ? formData.category
+          : formData.category?.id;
+
+      if (oldCatId && newCatId && oldCatId !== newCatId) {
+        // Decrement old category
+        const oldCatRef = doc(db, "categories", oldCatId);
+        await updateDoc(oldCatRef, {
+          productCount: increment(-1),
+          updatedAt: serverTimestamp(),
+        });
+
+        // Increment new category
+        const newCatRef = doc(db, "categories", newCatId);
+        await updateDoc(newCatRef, {
+          productCount: increment(1),
+          updatedAt: serverTimestamp(),
+        });
       }
 
       await updateDoc(docRef, {
@@ -195,14 +234,12 @@ const EditProduct = () => {
     }
   };
 
-
-
   return (
     <div>
-      {(initialLoading||loading)&&<LoadingOverlay/>}
+      {(initialLoading || loading) && <LoadingOverlay />}
       <div className="flex items-center mb-6">
         <button
-          onClick={() => navigate('/products')}
+          onClick={() => navigate("/products")}
           className="mr-4 p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
         >
           <ArrowLeft className="h-5 w-5" />
@@ -211,7 +248,9 @@ const EditProduct = () => {
           <h1 className="text-3xl font-bold bg-gradient-to-r from-amber-800 to-rose-700 bg-clip-text text-transparent">
             Edit Jewelry
           </h1>
-          <p className="text-gray-600 mt-1">Update this exquisite jewelry piece</p>
+          <p className="text-gray-600 mt-1">
+            Update this exquisite jewelry piece
+          </p>
         </div>
       </div>
 
@@ -224,7 +263,9 @@ const EditProduct = () => {
             </div>
             <div>
               <h2 className="text-xl font-bold text-white">{formData.name}</h2>
-              <p className="text-amber-100">Update the details of this jewelry piece</p>
+              <p className="text-amber-100">
+                Update the details of this jewelry piece
+              </p>
             </div>
           </div>
         </div>
@@ -233,7 +274,7 @@ const EditProduct = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Basic Information & Images */}
             <div className="space-y-6">
-               {/* Image Upload Section */}
+              {/* Image Upload Section */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-3">
                   Product Images *
@@ -256,7 +297,9 @@ const EditProduct = () => {
                     </div>
                     <div>
                       <p className="text-sm font-medium text-gray-700">
-                        {imageUploading ? "Uploading..." : "Click to upload images"}
+                        {imageUploading
+                          ? "Uploading..."
+                          : "Click to upload images"}
                       </p>
                       <p className="text-xs text-gray-500 mt-1">
                         PNG, JPG, WEBP up to 10MB
@@ -266,7 +309,7 @@ const EditProduct = () => {
                 </div>
 
                 {/* Previews */}
-                 {images.length > 0 && (
+                {images.length > 0 && (
                   <div className="mt-4">
                     <div className="grid grid-cols-3 gap-3">
                       {images.map((image, idx) => (
@@ -349,8 +392,10 @@ const EditProduct = () => {
                     required
                     className="w-full px-4 py-3 border border-amber-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-amber-50"
                   >
-                    {materials.map(mat => (
-                      <option key={mat} value={mat}>{mat}</option>
+                    {materials.map((mat) => (
+                      <option key={mat} value={mat}>
+                        {mat}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -371,8 +416,10 @@ const EditProduct = () => {
                     required
                     className="w-full px-4 py-3 border border-amber-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-amber-50"
                   >
-                    {gemstones.map(gem => (
-                      <option key={gem} value={gem}>{gem}</option>
+                    {gemstones.map((gem) => (
+                      <option key={gem} value={gem}>
+                        {gem}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -453,17 +500,23 @@ const EditProduct = () => {
                         onChange={handleChange}
                         className="sr-only"
                       />
-                      <div className={`w-12 h-6 rounded-full transition-colors duration-200 ${
-                        formData.featured ? 'bg-amber-500' : 'bg-gray-300'
-                      }`}>
-                        <div className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform duration-200 ${
-                          formData.featured ? 'transform translate-x-6' : ''
-                        }`}></div>
+                      <div
+                        className={`w-12 h-6 rounded-full transition-colors duration-200 ${
+                          formData.featured ? "bg-amber-500" : "bg-gray-300"
+                        }`}
+                      >
+                        <div
+                          className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform duration-200 ${
+                            formData.featured ? "transform translate-x-6" : ""
+                          }`}
+                        ></div>
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
                       <Sparkles className="h-4 w-4 text-amber-500" />
-                      <span className="text-sm font-medium text-gray-700">Featured Piece</span>
+                      <span className="text-sm font-medium text-gray-700">
+                        Featured Piece
+                      </span>
                     </div>
                   </label>
                 </div>
@@ -474,7 +527,7 @@ const EditProduct = () => {
           <div className="mt-8 flex justify-end space-x-4">
             <button
               type="button"
-              onClick={() => navigate('/products')}
+              onClick={() => navigate("/products")}
               className="px-6 py-3 border border-amber-300 text-amber-700 rounded-xl hover:bg-amber-50 transition-colors duration-200 font-medium"
             >
               Cancel
@@ -485,7 +538,7 @@ const EditProduct = () => {
               className="bg-gradient-to-r from-amber-500 to-rose-600 hover:from-amber-600 hover:to-rose-700 text-white px-8 py-3 rounded-xl flex items-center shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 font-medium"
             >
               <Save className="h-5 w-5 mr-2" />
-              {loading ? 'Updating...' : 'Update Jewelry'}
+              {loading ? "Updating..." : "Update Jewelry"}
             </button>
           </div>
         </form>

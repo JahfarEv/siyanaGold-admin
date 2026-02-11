@@ -17,7 +17,7 @@ const EditProduct = () => {
     gemstone: '',
     weight: '',
     price: '',
-    stock: '',
+    // stock: '',
     status: 'active',
     featured: false
   });
@@ -268,7 +268,7 @@ const EditProduct = () => {
                   />
                 </div>
 
-                <div>
+                {/* <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Stock Quantity *
                   </label>
@@ -281,11 +281,11 @@ const EditProduct = () => {
                     min="0"
                     className="w-full px-4 py-3 border border-amber-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-amber-50"
                   />
-                </div>
+                </div> */}
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <div>
+                {/* <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Status
                   </label>
@@ -298,7 +298,7 @@ const EditProduct = () => {
                     <option value="active">Active</option>
                     <option value="out-of-stock">Out of Stock</option>
                   </select>
-                </div>
+                </div> */}
 
                 <div className="flex items-center justify-center">
                   <label className="flex items-center space-x-3 cursor-pointer">

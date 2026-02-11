@@ -48,7 +48,7 @@ import Customers from "./components/Customers";
 import Settings from "./components/Settings";
 import Login from "./components/Login";
 import HomeCustomization from './components/HomeCustomization';
-import BannerManagement from "./components/Banners";
+// import BannerManagement from "./components/Banners";
 import CategoriesList from "./components/CategoryList";
 import AddCategory from "./components/AddCategory";
 import EditCategory from "./components/EditCategory";
@@ -115,7 +115,7 @@ function App() {
             {/* <Route path="orders" element={<Orders />} /> */}
             <Route path="homecustomization" element={<HomeCustomization />} />
             <Route path="settings" element={<Settings />} />
-            <Route path="banners" element={<BannerManagement />} />
+            {/* <Route path="banners" element={<BannerManagement />} /> */}
             <Route path="category" element={<CategoriesList />} />
             <Route path="categories/add" element={<AddCategory />} />
             <Route path="categories/edit/:id" element={<EditCategory />} />

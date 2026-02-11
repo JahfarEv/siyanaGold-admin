@@ -13,8 +13,6 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
- 
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -161,22 +159,6 @@ const Login = () => {
                 )}
               </button>
             </form>
-
-            {/* Demo Credentials */}
-            <div className="mt-6 p-4 bg-amber-50 rounded-xl border border-amber-200">
-              <h3 className="text-sm font-semibold text-amber-800 mb-2 flex items-center">
-                <Gem className="h-4 w-4 mr-2" />
-                Demo Credentials
-              </h3>
-              <div className="text-xs text-amber-700 space-y-1">
-                <p>
-                  <strong>Username:</strong> admin
-                </p>
-                <p>
-                  <strong>Password:</strong> admin123
-                </p>
-              </div>
-            </div>
           </div>
         </div>
 

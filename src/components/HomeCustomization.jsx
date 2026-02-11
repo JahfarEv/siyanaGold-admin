@@ -272,7 +272,7 @@ const HomeCustomization = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                24K Gold (₹)
+                1Gram (₹)
               </label>
               <input
                 type="number"
@@ -285,7 +285,7 @@ const HomeCustomization = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                22K Gold (₹)
+                8Gram Gold (₹)
               </label>
               <input
                 type="number"
@@ -297,7 +297,7 @@ const HomeCustomization = () => {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                18K Gold (₹)
+                18CT Gold (₹)
               </label>
               <input
                 type="number"

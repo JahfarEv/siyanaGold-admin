@@ -138,23 +138,33 @@ const AddCategory = () => {
   return (
     <div className="max-w-4xl mx-auto">
       {/* Header */}
-      <div className="mb-8">
-        <div className="flex items-center space-x-4 mb-4">
-          <button
-            onClick={handleCancel}
-            className="p-2 text-gray-600 hover:text-amber-600 hover:bg-amber-50 rounded-xl transition-colors"
-            title="Back to Categories"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </button>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-amber-800 to-rose-700 bg-clip-text text-transparent">
-            Add New Category
-          </h1>
-        </div>
-        <p className="text-gray-600 ml-12">
-          Create a new jewelry category for your collection
+     {/* Header */}
+<div className="mb-8">
+  <div className="flex items-center gap-3 mb-2">
+    <button
+      onClick={handleCancel}
+      className="p-2 text-gray-500 hover:text-amber-600 hover:bg-amber-50 rounded-xl transition-colors shrink-0"
+      title="Back to Categories"
+    >
+      <ArrowLeft className="h-5 w-5" />
+    </button>
+    <div className="flex items-center gap-3">
+      <div className="w-1 h-10 rounded-full bg-gradient-to-b from-amber-500 to-rose-600 shrink-0" />
+      <div>
+        <p className="text-xs font-semibold tracking-widest text-amber-600 uppercase mb-0.5">
+          Categories
         </p>
+        <h1 className="text-3xl font-bold text-gray-900 leading-tight flex items-center gap-2">
+          Add New Category
+          <span className="inline-block w-2 h-2 rounded-full bg-amber-500 mb-1" />
+        </h1>
       </div>
+    </div>
+  </div>
+  <p className="text-sm text-gray-500 ml-16 pl-3 border-l border-gray-200">
+    Create a new jewelry category for your collection
+  </p>
+</div>
 
       {/* Form */}
       <div className="bg-white rounded-2xl shadow-lg border border-amber-100 p-8">

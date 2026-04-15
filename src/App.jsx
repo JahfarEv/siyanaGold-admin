@@ -58,6 +58,7 @@ import EditCategory from "./components/EditCategory";
 import OffersList from "./components/OfferList";
 import AddOffer from "./components/AddOffer";
 import EditOffer from "./components/EditOffer";
+import CustomerDetail from "./components/CustomerDetail";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -115,6 +116,8 @@ function App() {
             <Route path="products/add" element={<AddProduct />} />
             <Route path="products/edit/:id" element={<EditProduct />} />
             <Route path="customers" element={<Customers />} />
+            <Route path="/customers/:id" element={<CustomerDetail />} />
+
             {/* <Route path="orders" element={<Orders />} /> */}
             <Route path="homecustomization" element={<HomeCustomization />} />
             <Route path="settings" element={<Settings />} />

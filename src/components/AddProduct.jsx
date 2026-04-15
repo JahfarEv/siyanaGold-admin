@@ -184,7 +184,7 @@ const AddProduct = () => {
     <div>
       {(loading || imageUploading) && <LoadingOverlay />}
 
-      <div className="flex items-center mb-6">
+      {/* <div className="flex items-center mb-6">
         <button
           onClick={() => navigate("/products")}
           className="mr-4 p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
@@ -199,7 +199,28 @@ const AddProduct = () => {
             Add a new exquisite piece to your collection
           </p>
         </div>
-      </div>
+      </div> */}
+
+      <div className="mb-8">
+  <div className="flex items-center gap-3 mb-2">
+    <div className="w-1 h-10 rounded-full bg-gradient-to-b from-amber-500 to-rose-600 shrink-0" />
+    <div>
+      <button
+          onClick={() => navigate("/products")}
+          className="mr-4 p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </button>
+      <h1 className="text-3xl font-bold text-gray-900 leading-tight flex items-center gap-2">
+            Add New Jewelry
+        <span className="inline-block w-2 h-2 rounded-full bg-amber-500 mb-1" />
+      </h1>
+    </div>
+  </div>
+  <p className="text-sm text-gray-500 ml-4 pl-3 border-l border-gray-200">
+            Add a new exquisite piece to your collection
+  </p>
+</div>
 
       <div className="bg-white rounded-2xl shadow-lg border border-amber-100 overflow-hidden">
         {/* Header */}

@@ -184,22 +184,7 @@ const AddProduct = () => {
     <div>
       {(loading || imageUploading) && <LoadingOverlay />}
 
-      {/* <div className="flex items-center mb-6">
-        <button
-          onClick={() => navigate("/products")}
-          className="mr-4 p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </button>
-        <div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-amber-800 to-rose-700 bg-clip-text text-transparent">
-            Add New Jewelry
-          </h1>
-          <p className="text-gray-600 mt-1">
-            Add a new exquisite piece to your collection
-          </p>
-        </div>
-      </div> */}
+      
 
       <div className="mb-8">
   <div className="flex items-center gap-3 mb-2">
@@ -370,7 +355,7 @@ const AddProduct = () => {
                     name="material"
                     value={formData.material}
                     onChange={handleChange}
-                    required
+                    // required
                     className="w-full px-4 py-3 border border-amber-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-amber-50"
                   >
                     <option value="">Select Material</option>
@@ -392,7 +377,7 @@ const AddProduct = () => {
                     name="gemstone"
                     value={formData.gemstone}
                     onChange={handleChange}
-                    required
+                    // required
                     className="w-full px-4 py-3 border border-amber-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-amber-50"
                   >
                     <option value="">Select Gemstone</option>
@@ -413,7 +398,7 @@ const AddProduct = () => {
                     name="weight"
                     value={formData.weight}
                     onChange={handleChange}
-                    required
+                    // required
                     min="0"
                     step="0.1"
                     className="w-full px-4 py-3 border border-amber-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-amber-50"
@@ -432,7 +417,7 @@ const AddProduct = () => {
                     name="price"
                     value={formData.price}
                     onChange={handleChange}
-                    required
+                    // required
                     min="0"
                     step="0.01"
                     className="w-full px-4 py-3 border border-amber-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-amber-50"
@@ -440,69 +425,11 @@ const AddProduct = () => {
                   />
                 </div>
 
-                {/* <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Stock Quantity *
-                  </label>
-                  <input
-                    type="number"
-                    name="stock"
-                    value={formData.stock}
-                    onChange={handleChange}
-                    required
-                    min="0"
-                    className="w-full px-4 py-3 border border-amber-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-amber-50"
-                    placeholder="0"
-                  />
-                </div> */}
+              
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                {/* <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Status
-                  </label>
-                  <select
-                    name="status"
-                    value={formData.status}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 border border-amber-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-amber-50"
-                  >
-                    <option value="active">Active</option>
-                    <option value="out-of-stock">Out of Stock</option>
-                  </select>
-                </div> */}
-
-                {/* <div className="flex items-center justify-center">
-                  <label className="flex items-center space-x-3 cursor-pointer">
-                    <div className="relative">
-                      <input
-                        type="checkbox"
-                        name="featured"
-                        checked={formData.featured}
-                        onChange={handleChange}
-                        className="sr-only"
-                      />
-                      <div
-                        className={`w-12 h-6 rounded-full transition-colors duration-200 ${
-                          formData.featured ? "bg-amber-500" : "bg-gray-300"
-                        }`}
-                      >
-                        <div
-                          className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform duration-200 ${
-                            formData.featured ? "transform translate-x-6" : ""
-                          }`}
-                        ></div>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Sparkles className="h-4 w-4 text-amber-500" />
-                      <span className="text-sm font-medium text-gray-700">
-                        Featured Piece
-                      </span>
-                    </div>
-                  </label>
-                </div> */}
+              
               </div>
             </div>
           </div>

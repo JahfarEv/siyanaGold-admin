@@ -374,7 +374,7 @@ const EditProduct = () => {
                     name="category"
                     value={formData.category?.id || formData.category || ""}
                     onChange={handleChange}
-                    required
+                    // required
                     className="w-full px-4 py-3 border border-amber-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-amber-50"
                   >
                     <option value="">Select Category</option>
@@ -394,7 +394,7 @@ const EditProduct = () => {
                     name="material"
                     value={formData.material}
                     onChange={handleChange}
-                    required
+                    // required
                     className="w-full px-4 py-3 border border-amber-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-amber-50"
                   >
                     {materials.map((mat) => (
@@ -418,7 +418,7 @@ const EditProduct = () => {
                     name="gemstone"
                     value={formData.gemstone}
                     onChange={handleChange}
-                    required
+                    // required
                     className="w-full px-4 py-3 border border-amber-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-amber-50"
                   >
                     {gemstones.map((gem) => (
@@ -438,7 +438,7 @@ const EditProduct = () => {
                     name="weight"
                     value={formData.weight}
                     onChange={handleChange}
-                    required
+                    // required
                     min="0"
                     step="0.1"
                     className="w-full px-4 py-3 border border-amber-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-amber-50"
@@ -456,7 +456,7 @@ const EditProduct = () => {
                     name="price"
                     value={formData.price}
                     onChange={handleChange}
-                    required
+                    // required
                     min="0"
                     step="0.01"
                     className="w-full px-4 py-3 border border-amber-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-amber-50"

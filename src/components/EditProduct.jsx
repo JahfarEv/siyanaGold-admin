@@ -276,7 +276,7 @@ const EditProduct = () => {
         </div>
 
         <form onSubmit={handleSubmit} className="p-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6">
             {/* Basic Information & Images */}
             <div className="space-y-6">
               {/* Image Upload Section */}
@@ -374,7 +374,7 @@ const EditProduct = () => {
                     name="category"
                     value={formData.category?.id || formData.category || ""}
                     onChange={handleChange}
-                    // required
+                    required
                     className="w-full px-4 py-3 border border-amber-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-amber-50"
                   >
                     <option value="">Select Category</option>
@@ -388,15 +388,15 @@ const EditProduct = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Material *
+                    Material
                   </label>
                   <select
                     name="material"
-                    value={formData.material}
+                    value={formData.material || ""}
                     onChange={handleChange}
-                    // required
                     className="w-full px-4 py-3 border border-amber-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-amber-50"
                   >
+                    <option value="">Select Material</option>
                     {materials.map((mat) => (
                       <option key={mat} value={mat}>
                         {mat}
@@ -410,46 +410,27 @@ const EditProduct = () => {
             {/* Specifications & Pricing */}
             <div className="space-y-6">
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Gemstone *
-                  </label>
-                  <select
-                    name="gemstone"
-                    value={formData.gemstone}
-                    onChange={handleChange}
-                    // required
-                    className="w-full px-4 py-3 border border-amber-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-amber-50"
-                  >
-                    {gemstones.map((gem) => (
-                      <option key={gem} value={gem}>
-                        {gem}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+               
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Weight (grams) *
                   </label>
                   <input
-                    type="number"
+                    type="text"
                     name="weight"
                     value={formData.weight}
                     onChange={handleChange}
-                    // required
-                    min="0"
-                    step="0.1"
+                    required
                     className="w-full px-4 py-3 border border-amber-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-amber-50"
+                    placeholder="e.g. below 8 gram"
                   />
                 </div>
-              </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
+
+                  <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Price ($) *
+                    Price (₹) *
                   </label>
                   <input
                     type="number"
@@ -462,6 +443,10 @@ const EditProduct = () => {
                     className="w-full px-4 py-3 border border-amber-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-amber-50"
                   />
                 </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+              
 
                 {/* <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">

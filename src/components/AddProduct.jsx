@@ -125,6 +125,16 @@ const AddProduct = () => {
       return;
     }
 
+    const categoryId =
+      typeof formData.category === "string"
+        ? formData.category
+        : formData.category?.id;
+
+    if (!categoryId) {
+      alert("Please select a category.");
+      return;
+    }
+
     setLoading(true);
     setImageUploading(true);
 
@@ -133,7 +143,7 @@ const AddProduct = () => {
         images.map(async (img) => {
           const url = await uploadToCloudinary(
             img.file,
-            `products/${formData.category || "others"}`
+            `products/${formData.category?.name || "others"}`
           );
           return { name: img.name, url };
         })
@@ -148,11 +158,11 @@ const AddProduct = () => {
       await addDoc(collection(db, "products"), productData);
 
       // 🔥 Update category product count
-      const categoryRef = doc(db, "categories", formData.category.id);
+      const categoryRef = doc(db, "categories", categoryId);
       await updateDoc(categoryRef, {
-        productCount: increment(1),
-        updatedAt: serverTimestamp(),
-      });
+          productCount: increment(1),
+          updatedAt: serverTimestamp(),
+        });
 
       setFormData({
         name: "",
@@ -335,7 +345,7 @@ const AddProduct = () => {
                     name="category"
                     value={formData.category.id || ""}
                     onChange={handleChange}
-                    required
+                    // required
                     className="w-full px-4 py-3 border border-amber-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-amber-50"
                   >
                     <option value="">Select Category</option>
@@ -349,11 +359,11 @@ const AddProduct = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Material *
+                    Material
                   </label>
                   <select
                     name="material"
-                    value={formData.material}
+                    value={formData.material || ""}
                     onChange={handleChange}
                     // required
                     className="w-full px-4 py-3 border border-amber-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-amber-50"
@@ -369,7 +379,7 @@ const AddProduct = () => {
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <div>
+                {/* <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Gemstone *
                   </label>
@@ -387,30 +397,25 @@ const AddProduct = () => {
                       </option>
                     ))}
                   </select>
-                </div>
+                </div> */}
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Weight (grams) *
                   </label>
                   <input
-                    type="number"
+                    type="text"
                     name="weight"
                     value={formData.weight}
                     onChange={handleChange}
-                    // required
-                    min="0"
-                    step="0.1"
+                    required
                     className="w-full px-4 py-3 border border-amber-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-amber-50"
-                    placeholder="0.0"
+                    placeholder="e.g. below 8 gram"
                   />
                 </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
+                   <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Price ($) *
+                    Price (₹) *
                   </label>
                   <input
                     type="number"
@@ -424,6 +429,10 @@ const AddProduct = () => {
                     placeholder="0.00"
                   />
                 </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+             
 
               
               </div>

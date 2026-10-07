@@ -1,314 +1,16 @@
-// import React, { useState, useEffect } from "react";
-// import { Link } from "react-router-dom";
-// import { Plus, Edit, Trash2, Search } from "lucide-react";
-// import Swal from "sweetalert2";
-// import {
-//   collection,
-//   getDocs,
-//   query,
-//   orderBy,
-//   deleteDoc,
-//   doc,
-//   onSnapshot,
-//   updateDoc,
-//   increment,
-//   serverTimestamp,
-// } from "firebase/firestore";
-// import { db } from "../firebase/firebase";
-
-// const ProductsList = () => {
-//   const [products, setProducts] = useState([]);
-//   const [searchTerm, setSearchTerm] = useState("");
-//   const [loading, setLoading] = useState(true);
-//   const [filter, setFilter] = useState("all");
-//   const [categories, setCategories] = useState([]);
-//   const [selectedCategoryId, setSelectedCategoryId] = useState("");
-//   useEffect(() => {
-//     const q = query(collection(db, "categories"), orderBy("createdAt", "asc"));
-//     const unsub = onSnapshot(q, (snap) => {
-//       setCategories(snap.docs.map((d) => ({ id: d.id, ...(d.data() || {}) })));
-//     });
-//     return () => unsub();
-//   }, []);
-//   useEffect(() => {
-//     const fetchProducts = async () => {
-//       try {
-//         const q = query(
-//           collection(db, "products"),
-//           orderBy("createdAt", "desc")
-//         );
-//         const querySnapshot = await getDocs(q);
-
-//         const fetchedProducts = querySnapshot.docs.map((doc) => ({
-//           id: doc.id,
-//           ...doc.data(),
-//         }));
-
-//         setProducts(fetchedProducts);
-//         console.log(fetchedProducts);
-//       } catch (error) {
-//         console.error("Error fetching products:", error);
-//       } finally {
-//         setLoading(false);
-//       }
-//     };
-
-//     fetchProducts();
-//   }, []);
-
-//   const handleDelete = async (productId) => {
-//     try {
-//       // Fetch the product name (optional if you already have it)
-//       const product = products.find((p) => p.id === productId);
-
-//       Swal.fire({
-//         title: "Are you sure?",
-//         text: `You are about to delete "${
-//           product?.name || "this product"
-//         }". This action cannot be undone!`,
-//         icon: "warning",
-//         showCancelButton: true,
-//         confirmButtonColor: "#d33",
-//         cancelButtonColor: "#3085d6",
-//         confirmButtonText: "Yes, delete it!",
-//         cancelButtonText: "Cancel",
-//         background: "#fff",
-//         color: "#333",
-//         iconColor: "#eab308",
-//         customClass: {
-//           popup: "rounded-2xl",
-//           confirmButton: "rounded-xl",
-//           cancelButton: "rounded-xl",
-//         },
-//       }).then(async (result) => {
-//         if (result.isConfirmed) {
-//           try {
-//             await deleteDoc(doc(db, "products", productId));
-
-//             // ↓ Decrement category product count
-//             const categoryRef = doc(db, "categories", product.category.id);
-//             await updateDoc(categoryRef, {
-//               productCount: increment(-1),
-//               updatedAt: serverTimestamp(),
-//             });
-
-//             setProducts(products.filter((p) => p.id !== productId));
-
-//             Swal.fire({
-//               title: "Deleted!",
-//               text: `"${
-//                 product?.name || "Product"
-//               }" has been deleted successfully.`,
-//               icon: "success",
-//             });
-//           } catch (error) {
-//             console.error("Delete error:", error);
-//           }
-//         }
-//       });
-//     } catch (error) {
-//       console.error("Error in delete handler:", error);
-//     }
-//   };
-//   const filteredProducts = products.filter((product) => {
-//     const term = searchTerm.toLowerCase().trim();
-//     const name = (product.name || "").toLowerCase();
-//     const categoryName = (product.category.name || "").toLowerCase();
-//     const gemstone = (product.gemstone || "").toLowerCase();
-//     const material = (product.material || "").toLowerCase();
-//     const price = product.price ? product.price.toString().toLowerCase() : "";
-
-//     const matchesSearch =
-//       name.includes(term) ||
-//       categoryName.includes(term) ||
-//       gemstone.includes(term) ||
-//       material.includes(term) ||
-//       price.includes(term);
-
-//     const matchesFilter = filter === "all" || product.status === filter;
-
-//     const selectedCat = categories.find((c) => c.id === selectedCategoryId);
-//     const matchesCategory =
-//       !selectedCategoryId ||
-//       product.categoryId === selectedCategoryId ||
-//       (selectedCat && categoryName === (selectedCat.name || "").toLowerCase());
-
-//     return matchesSearch && matchesFilter && matchesCategory;
-//   });
-
-//   const getGemstoneColor = (gemstone) => {
-//     const colors = {
-//       Diamond: "from-blue-100 to-purple-100",
-//       Pearl: "from-amber-100 to-rose-100",
-//       Sapphire: "from-blue-100 to-indigo-100",
-//       Emerald: "from-green-100 to-emerald-100",
-//       Ruby: "from-red-100 to-pink-100",
-//     };
-//     return colors[gemstone] || "from-gray-100 to-gray-200";
-//   };
-
-//   if (loading) {
-//     return (
-//       <div className="flex justify-center items-center h-64">
-//         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600"></div>
-//       </div>
-//     );
-//   }
-
-//   return (
-//     <div>
-//       {/* Header */}
-//     {/* Header */}
-// <div className="mb-8">
-//   <div className="flex items-center gap-3 mb-2">
-//     <div className="w-1 h-10 rounded-full bg-gradient-to-b from-amber-500 to-rose-600 shrink-0" />
-//     <div>
-//       <p className="text-xs font-semibold tracking-widest text-amber-600 uppercase mb-0.5">
-//         Products
-//       </p>
-//       <h1 className="text-3xl font-bold text-gray-900 leading-tight flex items-center gap-2">
-//         Jewelry Collection
-//         <span className="inline-block w-2 h-2 rounded-full bg-amber-500 mb-1" />
-//       </h1>
-//     </div>
-//   </div>
-//   <p className="text-sm text-gray-500 ml-4 pl-3 border-l border-gray-200">
-//     Manage your exquisite jewelry pieces
-//   </p>
-// </div>
-
-
-
-// <div className="bg-white rounded-2xl shadow-lg border border-amber-100 p-4 mb-6">
-//   <div className="flex items-center gap-3">
-    
-//     {/* 🔍 Search */}
-//     <div className="relative flex-1">
-//       <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-amber-400 h-4 w-4" />
-//       <input
-//         type="text"
-//         placeholder="Search..."
-//         className="w-full pl-9 pr-3 py-2.5 text-sm border border-amber-200 rounded-xl focus:ring-2 focus:ring-amber-500 bg-amber-50"
-//         value={searchTerm}
-//         onChange={(e) => setSearchTerm(e.target.value)}
-//       />
-//     </div>
-
-//     {/* 📂 Category */}
-//     <div className="w-32 sm:w-40">
-//       <select
-//         value={selectedCategoryId}
-//         onChange={(e) => setSelectedCategoryId(e.target.value)}
-//         className="w-full px-3 py-2.5 text-sm border border-amber-200 rounded-xl bg-amber-50 focus:ring-2 focus:ring-amber-500"
-//       >
-//         <option value="">All</option>
-//         {categories.map((cat) => (
-//           <option key={cat.id} value={cat.id}>
-//             {cat.name}
-//           </option>
-//         ))}
-//       </select>
-//     </div>
-
-//   </div>
-// </div>
-//       {/* Products Grid - Minimal Design */}
-//       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-//         {filteredProducts.map((product) => (
-//           <div
-//             key={product.id}
-//             className="bg-white rounded-2xl shadow-lg border border-amber-100 hover:shadow-xl transition-all duration-300 overflow-hidden group"
-//           >
-//             <div
-//               className={`h-40 bg-gradient-to-br ${getGemstoneColor(
-//                 product.gemstone
-//               )} flex items-center justify-center relative`}
-//             >
-//               <div className="h-40 w-full flex items-center justify-center bg-white">
-//                 <img
-//                   src={product.images[0].url}
-//                   alt={product.images[0].name}
-//                   className="h-32 w-32 object-contain transition-transform duration-300 group-hover:scale-110"
-//                 />
-//               </div>
-//             </div>
-
-//             <div className="p-4">
-//               <h3 className="text-base font-semibold text-gray-900 text-center line-clamp-2 group-hover:text-amber-600 transition-colors mb-2">
-//                 {product.name}
-//               </h3>
-
-//               <div className="flex items-center justify-center space-x-2 mb-3">
-//                 <span className="text-xs font-medium text-amber-600 bg-amber-50 px-2 py-1 rounded">
-//                   {product.category.name}
-//                 </span>
-//                 <span className="text-xs font-medium text-gray-600 bg-gray-50 px-2 py-1 rounded">
-//                   {product.gemstone}
-//                 </span>
-//               </div>
-
-//               <div className="text-center space-y-1 mb-3">
-//                 <div className="text-sm text-gray-600">
-//                   {product.material} • {product.weight}g
-//                 </div>
-//                 <div className="text-lg font-bold text-amber-700">
-//                   ${product.price.toLocaleString()}
-//                 </div>
-//               </div>
-
-//               <div className="flex items-center justify-center space-x-2">
-//                 <Link
-//                   to={`/products/edit/${product.id}`}
-//                   className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-//                   title="Edit Product"
-//                 >
-//                   <Edit className="h-4 w-4" />
-//                 </Link>
-//                 <button
-//                   onClick={() => handleDelete(product.id)}
-//                   className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-//                   title="Delete Product"
-//                 >
-//                   <Trash2 className="h-4 w-4" />
-//                 </button>
-//               </div>
-//             </div>
-//           </div>
-//         ))}
-//       </div>
-
-//       {filteredProducts.length === 0 && (
-//         <div className="text-center py-12">
-//           <div className="w-24 h-24 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
-//             <Search className="h-8 w-8 text-amber-400" />
-//           </div>
-//           <h3 className="text-lg font-medium text-gray-900 mb-2">
-//             No jewelry pieces found
-//           </h3>
-//           <p className="text-gray-500">
-//             Try adjusting your search or filter criteria
-//           </p>
-//         </div>
-//       )}
-
-
-
-//       <Link
-//   to="/products/add"
-//   className="fixed bottom-20 right-4 lg:bottom-6 lg:right-6 bg-amber-600 hover:bg-amber-700 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center z-50"
-// >
-//   <Plus className="h-6 w-6" />
-// </Link>
-//     </div>
-//   );
-// };
-
-// export default ProductsList;
-
-
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { Plus, Edit, Trash2, Search } from "lucide-react";
+import {
+  Plus,
+  Edit,
+  Trash2,
+  Search,
+  Package,
+  Scale,
+  IndianRupee,
+  SlidersHorizontal,
+  RefreshCw,
+} from "lucide-react";
 import Swal from "sweetalert2";
 import {
   collection,
@@ -333,317 +35,327 @@ const ProductsList = () => {
   const [selectedCategoryId, setSelectedCategoryId] = useState("");
 
   useEffect(() => {
-    const q = query(collection(db, "categories"), orderBy("createdAt", "asc"));
-    const unsub = onSnapshot(q, (snap) => {
-      setCategories(snap.docs.map((d) => ({ id: d.id, ...(d.data() || {}) })));
-    });
-    return () => unsub();
+    const unsubscribe = onSnapshot(
+      query(collection(db, "categories"), orderBy("createdAt", "asc")),
+      (snapshot) =>
+        setCategories(
+          snapshot.docs.map((item) => ({ id: item.id, ...item.data() })),
+        ),
+      (error) => console.error("Error loading categories:", error),
+    );
+    return unsubscribe;
   }, []);
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const q = query(
-          collection(db, "products"),
-          orderBy("createdAt", "desc")
-        );
-        const querySnapshot = await getDocs(q);
-
-        const fetchedProducts = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-
-        setProducts(fetchedProducts);
-        console.log(fetchedProducts);
-      } catch (error) {
-        console.error("Error fetching products:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProducts();
-  }, []);
-
-  const handleDelete = async (productId) => {
+  const loadProducts = async () => {
+    setLoading(true);
     try {
-      const product = products.find((p) => p.id === productId);
-
-      Swal.fire({
-        title: "Are you sure?",
-        text: `You are about to delete "${
-          product?.name || "this product"
-        }". This action cannot be undone!`,
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#d33",
-        cancelButtonColor: "#3085d6",
-        confirmButtonText: "Yes, delete it!",
-        cancelButtonText: "Cancel",
-        background: "#fff",
-        color: "#333",
-        iconColor: "#eab308",
-        customClass: {
-          popup: "rounded-2xl",
-          confirmButton: "rounded-xl",
-          cancelButton: "rounded-xl",
-        },
-      }).then(async (result) => {
-        if (result.isConfirmed) {
-          try {
-            await deleteDoc(doc(db, "products", productId));
-
-            const categoryRef = doc(db, "categories", product.category.id);
-            await updateDoc(categoryRef, {
-              productCount: increment(-1),
-              updatedAt: serverTimestamp(),
-            });
-
-            setProducts(products.filter((p) => p.id !== productId));
-
-            Swal.fire({
-              title: "Deleted!",
-              text: `"${
-                product?.name || "Product"
-              }" has been deleted successfully.`,
-              icon: "success",
-            });
-          } catch (error) {
-            console.error("Delete error:", error);
-          }
-        }
-      });
+      const snapshot = await getDocs(
+        query(collection(db, "products"), orderBy("createdAt", "desc")),
+      );
+      setProducts(
+        snapshot.docs.map((item) => ({ id: item.id, ...item.data() })),
+      );
     } catch (error) {
-      console.error("Error in delete handler:", error);
+      console.error("Error fetching products:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Could not load products",
+        text: "Please try again.",
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
-  const filteredProducts = products.filter((product) => {
-    const term = searchTerm.toLowerCase().trim();
-    const name = (product.name || "").toLowerCase();
-    const categoryName = (product.category.name || "").toLowerCase();
-    const gemstone = (product.gemstone || "").toLowerCase();
-    const material = (product.material || "").toLowerCase();
-    const price = product.price ? product.price.toString().toLowerCase() : "";
+  useEffect(() => {
+    loadProducts();
+  }, []);
 
-    const matchesSearch =
-      name.includes(term) ||
-      categoryName.includes(term) ||
-      gemstone.includes(term) ||
-      material.includes(term) ||
-      price.includes(term);
+  const handleDelete = async (productId) => {
+    const product = products.find((item) => item.id === productId);
+    const result = await Swal.fire({
+      title: "Delete product?",
+      text: `â€œ${product?.name || "This product"}â€ will be permanently removed.`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#be123c",
+      cancelButtonColor: "#64748b",
+      confirmButtonText: "Delete product",
+      cancelButtonText: "Keep it",
+    });
+    if (!result.isConfirmed) return;
+    try {
+      await deleteDoc(doc(db, "products", productId));
+      const categoryId = product?.category?.id || product?.categoryId;
+      if (categoryId)
+        await updateDoc(doc(db, "categories", categoryId), {
+          productCount: increment(-1),
+          updatedAt: serverTimestamp(),
+        });
+      setProducts((current) => current.filter((item) => item.id !== productId));
+      Swal.fire({
+        icon: "success",
+        title: "Product deleted",
+        timer: 1400,
+        showConfirmButton: false,
+      });
+    } catch (error) {
+      console.error("Delete error:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Delete failed",
+        text: "Please try again.",
+      });
+    }
+  };
 
-    const matchesFilter = filter === "all" || product.status === filter;
+  const filteredProducts = useMemo(
+    () =>
+      products.filter((product) => {
+        const term = searchTerm.toLowerCase().trim();
+        const categoryName =
+          typeof product.category === "object"
+            ? product.category?.name
+            : product.category;
+        const searchable = [
+          product.name,
+          categoryName,
+          product.material,
+          product.gemstone,
+          product.price,
+          product.weight,
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+        const categoryMatches =
+          !selectedCategoryId ||
+          product.category?.id === selectedCategoryId ||
+          product.categoryId === selectedCategoryId;
+        const statusMatches =
+          filter === "all" || (product.status || "active") === filter;
+        return searchable.includes(term) && categoryMatches && statusMatches;
+      }),
+    [products, searchTerm, selectedCategoryId, filter],
+  );
 
-    const selectedCat = categories.find((c) => c.id === selectedCategoryId);
-    const matchesCategory =
-      !selectedCategoryId ||
-      product.categoryId === selectedCategoryId ||
-      (selectedCat && categoryName === (selectedCat.name || "").toLowerCase());
-
-    return matchesSearch && matchesFilter && matchesCategory;
-  });
-
-  if (loading) {
+  const activeCount = products.filter(
+    (product) => (product.status || "active") === "active",
+  ).length;
+  if (loading)
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600"></div>
+      <div className="flex min-h-64 items-center justify-center">
+        <RefreshCw className="h-8 w-8 animate-spin text-amber-600" />
       </div>
     );
-  }
 
   return (
-    <div>
-      {/* Header */}
-      <div className="mb-8">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="w-1 h-10 rounded-full bg-gradient-to-b from-amber-500 to-rose-600 shrink-0" />
-          <div>
-            <p className="text-xs font-semibold tracking-widest text-amber-600 uppercase mb-0.5">
-              Products
-            </p>
-            <h1 className="text-3xl font-bold text-gray-900 leading-tight flex items-center gap-2">
-              Jewelry Collection
-              <span className="inline-block w-2 h-2 rounded-full bg-amber-500 mb-1" />
-            </h1>
-          </div>
+    <div className="mx-auto max-w-[1500px] space-y-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="mb-1 text-xs font-bold uppercase tracking-[0.22em] text-amber-700">
+            Catalog management
+          </p>
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900">
+            Products
+          </h1>
+          <p className="mt-1 text-sm text-slate-500">
+            Keep your jewelry catalog accurate, polished, and ready to sell.
+          </p>
         </div>
-        <p className="text-sm text-gray-500 ml-4 pl-3 border-l border-gray-200">
-          Manage your exquisite jewelry pieces
-        </p>
+        <Link
+          to="/products/add"
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-slate-900/10 transition hover:bg-amber-700"
+        >
+          <Plus className="h-4 w-4" /> Add product
+        </Link>
       </div>
 
-      {/* Search and Filter Bar */}
-      <div className="bg-white rounded-2xl shadow-lg border border-amber-100 p-4 mb-6">
-        <div className="flex items-center gap-3">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-amber-400 h-4 w-4" />
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <div className="rounded-2xl border border-amber-100 bg-white p-4 shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+            Total products
+          </p>
+          <p className="mt-2 text-2xl font-bold text-slate-900">
+            {products.length}
+          </p>
+        </div>
+        <div className="rounded-2xl border border-amber-100 bg-white p-4 shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+            Active listings
+          </p>
+          <p className="mt-2 text-2xl font-bold text-emerald-600">
+            {activeCount}
+          </p>
+        </div>
+        <div className="rounded-2xl border border-amber-100 bg-white p-4 shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+            Showing now
+          </p>
+          <p className="mt-2 text-2xl font-bold text-amber-700">
+            {filteredProducts.length}
+          </p>
+        </div>
+      </div>
+
+      <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700">
+          <SlidersHorizontal className="h-4 w-4 text-amber-600" /> Find a
+          product
+        </div>
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-[1fr_190px_150px]">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
             <input
-              type="text"
-              placeholder="Search products..."
-              className="w-full pl-9 pr-3 py-2.5 text-sm border border-amber-200 rounded-xl focus:ring-2 focus:ring-amber-500 bg-amber-50"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search name, material, category, price..."
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-10 pr-3 text-sm outline-none transition focus:border-amber-500 focus:ring-2 focus:ring-amber-100"
             />
           </div>
-
-          <div className="w-32 sm:w-40">
-            <select
-              value={selectedCategoryId}
-              onChange={(e) => setSelectedCategoryId(e.target.value)}
-              className="w-full px-3 py-2.5 text-sm border border-amber-200 rounded-xl bg-amber-50 focus:ring-2 focus:ring-amber-500"
-            >
-              <option value="">All Categories</option>
-              {categories.map((cat) => (
-                <option key={cat.id} value={cat.id}>
-                  {cat.name}
-                </option>
-              ))}
-            </select>
-          </div>
+          <select
+            value={selectedCategoryId}
+            onChange={(e) => setSelectedCategoryId(e.target.value)}
+            className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm outline-none focus:border-amber-500"
+          >
+            <option value="">All categories</option>
+            {categories.map((cat) => (
+              <option key={cat.id} value={cat.id}>
+                {cat.name}
+              </option>
+            ))}
+          </select>
+          <select
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm outline-none focus:border-amber-500"
+          >
+            <option value="all">All status</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
         </div>
       </div>
 
-      {/* Products Table View - Single Row */}
-      <div className="bg-white rounded-2xl shadow-lg border border-amber-100 overflow-hidden">
+      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
         <div className="overflow-x-auto">
-          <table className="w-full">
-            {/* Table Header */}
-            <thead className="bg-gradient-to-r from-amber-50 to-rose-50 border-b border-amber-200">
+          <table className="w-full min-w-[900px] text-left">
+            <thead className="border-b border-slate-200 bg-slate-50">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Image
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Name
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Category
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Gemstone
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Material
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Price
-                </th>
-                <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Actions
-                </th>
+                {[
+                  "Product",
+                  "Category",
+                  "Material",
+                  "Weight",
+                  "Price",
+                  "Status",
+                  "Actions",
+                ].map((heading) => (
+                  <th
+                    key={heading}
+                    className="px-5 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-500"
+                  >
+                    {heading}
+                  </th>
+                ))}
               </tr>
             </thead>
-            
-            {/* Table Body */}
-            <tbody className="divide-y divide-gray-100">
-              {filteredProducts.map((product) => (
-                <tr
-                  key={product.id}
-                  className="hover:bg-amber-50/30 transition-colors duration-150"
-                >
-                  {/* Image */}
-                  <td className="px-4 py-3">
-                    <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100">
-                      <img
-                        src={product.images?.[0]?.url}
-                        alt={product.name}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  </td>
-                  
-                  {/* Name */}
-                  <td className="px-4 py-3">
-                    <p className="text-sm font-medium text-gray-900 line-clamp-2">
-                      {product.name}
-                    </p>
-                  </td>
-                  
-                  {/* Category */}
-                  <td className="px-4 py-3">
-                    <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-amber-100 text-amber-700">
-                      {product.category?.name}
-                    </span>
-                  </td>
-                  
-                  {/* Gemstone */}
-                  <td className="px-4 py-3">
-                    <span className="text-sm text-gray-700">
-                      {product.gemstone || "-"}
-                    </span>
-                  </td>
-                  
-                  {/* Material & Weight */}
-                  <td className="px-4 py-3">
-                    <div className="flex flex-col">
-                      <span className="text-sm text-gray-700">
-                        {product.material || "-"}
+            <tbody className="divide-y divide-slate-100">
+              {filteredProducts.map((product) => {
+                const categoryName =
+                  typeof product.category === "object"
+                    ? product.category?.name
+                    : product.category;
+                const status = product.status || "active";
+                return (
+                  <tr
+                    key={product.id}
+                    className="transition hover:bg-amber-50/40"
+                  >
+                    <td className="px-5 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-slate-100 ring-1 ring-slate-200">
+                          <img
+                            src={product.images?.[0]?.url}
+                            alt=""
+                            className="h-full w-full object-cover"
+                          />
+                        </div>
+                        <div>
+                          <p className="max-w-[240px] truncate text-sm font-semibold text-slate-900">
+                            {product.name || "Untitled product"}
+                          </p>
+                          <p className="mt-0.5 text-xs text-slate-400">
+                            {product.featured
+                              ? "Featured piece"
+                              : "Standard listing"}
+                          </p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-5 py-4">
+                      <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
+                        {categoryName || "Uncategorized"}
                       </span>
-                      {product.weight && (
-                        <span className="text-xs text-gray-400">
-                          {product.weight}g
-                        </span>
-                      )}
-                    </div>
-                  </td>
-                  
-                  {/* Price */}
-                  <td className="px-4 py-3">
-                    <span className="text-sm font-bold text-amber-700">
-                      ₹{product.price?.toLocaleString()}
-                    </span>
-                  </td>
-                  
-                  {/* Actions */}
-                  <td className="px-4 py-3">
-                    <div className="flex items-center justify-center gap-2">
-                      <Link
-                        to={`/products/edit/${product.id}`}
-                        className="p-1.5 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                        title="Edit Product"
+                    </td>
+                    <td className="px-5 py-4 text-sm text-slate-600">
+                      {product.material || "â€”"}
+                    </td>
+                    <td className="px-5 py-4">
+                      <div className="inline-flex items-center gap-1.5 rounded-lg bg-slate-50 px-2.5 py-2 text-sm font-semibold text-slate-700">
+                        <Scale className="h-4 w-4 text-amber-600" />
+                        {product.weight || "—"}
+                      </div>
+                    </td>
+                    <td className="px-5 py-4">
+                      <span className="inline-flex items-center gap-1 text-sm font-bold text-slate-900">
+                        <IndianRupee className="h-3.5 w-3.5 text-amber-600" />
+                        {Number(product.price || 0).toLocaleString("en-IN")}
+                      </span>
+                    </td>
+                    <td className="px-5 py-4">
+                      <span
+                        className={`rounded-full px-3 py-1 text-xs font-semibold ${status === "active" ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"}`}
                       >
-                        <Edit className="h-4 w-4" />
-                      </Link>
-                      <button
-                        onClick={() => handleDelete(product.id)}
-                        className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                        title="Delete Product"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                        {status === "active" ? "Active" : "Inactive"}
+                      </span>
+                    </td>
+                    <td className="px-5 py-4">
+                      <div className="flex items-center gap-1">
+                        <Link
+                          to={`/products/edit/${product.id}`}
+                          className="rounded-lg p-2 text-slate-400 transition hover:bg-amber-50 hover:text-amber-700"
+                          title="Edit product"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Link>
+                        <button
+                          onClick={() => handleDelete(product.id)}
+                          className="rounded-lg p-2 text-slate-400 transition hover:bg-rose-50 hover:text-rose-600"
+                          title="Delete product"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
-
-        {/* Empty State */}
         {filteredProducts.length === 0 && (
-          <div className="text-center py-12">
-            <div className="w-24 h-24 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Search className="h-8 w-8 text-amber-400" />
-            </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              No jewelry pieces found
+          <div className="px-6 py-16 text-center">
+            <Package className="mx-auto h-10 w-10 text-amber-300" />
+            <h3 className="mt-3 text-lg font-semibold text-slate-900">
+              No products found
             </h3>
-            <p className="text-gray-500">
-              Try adjusting your search or filter criteria
+            <p className="mt-1 text-sm text-slate-500">
+              Try a different search or filter.
             </p>
           </div>
         )}
       </div>
-
-      {/* Add Product Button */}
-      <Link
-        to="/products/add"
-        className="fixed bottom-20 right-4 lg:bottom-6 lg:right-6 bg-amber-600 hover:bg-amber-700 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center z-50"
-      >
-        <Plus className="h-6 w-6" />
-      </Link>
     </div>
   );
 };

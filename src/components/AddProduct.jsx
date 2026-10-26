@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Save, Gem, Sparkles, Upload, X } from "lucide-react";
-import { uploadToCloudinary } from "../cloudinary/upload";
+import { uploadToR2 } from "../r2/upload";
 import {
   addDoc,
   collection,
@@ -58,17 +58,6 @@ const AddProduct = () => {
     "Rose Gold",
     "Sterling Silver",
   ];
-  const gemstones = [
-    "Diamond",
-    "Pearl",
-    "Sapphire",
-    "Ruby",
-    "Emerald",
-    "Amethyst",
-    "Topaz",
-    "Opal",
-  ];
-
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
 
@@ -141,7 +130,7 @@ const AddProduct = () => {
     try {
       const uploadedImages = await Promise.all(
         images.map(async (img) => {
-          const url = await uploadToCloudinary(
+          const url = await uploadToR2(
             img.file,
             `products/${formData.category?.name || "others"}`
           );
@@ -182,7 +171,7 @@ const AddProduct = () => {
       navigate("/products");
     } catch (error) {
       console.error("Error adding product:", error);
-      alert("Failed to add product. Check console.");
+      alert(`Failed to add product: ${error.message || "Please try again."}`);
       setLoading(false);
       setImageUploading(false);
     }

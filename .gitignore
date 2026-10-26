@@ -22,3 +22,21 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+# env and secrets
+.env
+.env.*
+!.env.example
+serviceAccountKey.json
+
+# one-time migration files
+export/
+mapping.json
+uploaded.json
+firestore-backup*.json
+export.js
+upload-r2.js
+update-firestore.js
+backup-firestore.js
+
+# worker (if you leave it inside this project)
+upload-worker/.wrangler/

@@ -3,8 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Upload, ImageIcon, Plus } from "lucide-react";
 import Swal from "sweetalert2";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { db, storage } from "../firebase/firebase";
+import { db } from "../firebase/firebase";
+import { uploadToR2 } from "../r2/upload";
 
 const AddOffer = () => {
   const navigate = useNavigate();
@@ -109,10 +109,7 @@ const AddOffer = () => {
       let imageUrl = "";
 
       if (imageFile) {
-        const fileName = `offers/${Date.now()}_${imageFile.name}`;
-        const storageRef = ref(storage, fileName);
-        const snapshot = await uploadBytes(storageRef, imageFile);
-        imageUrl = await getDownloadURL(snapshot.ref);
+        imageUrl = await uploadToR2(imageFile, "offers");
       }
 
       const offerData = {
@@ -145,7 +142,7 @@ const AddOffer = () => {
       console.error("Error adding offer:", error);
       Swal.fire({
         title: "Error!",
-        text: "Failed to create offer. Please try again.",
+        text: error.message || "Failed to create offer. Please try again.",
         icon: "error",
         confirmButtonColor: "#ef4444",
         background: "#fff",

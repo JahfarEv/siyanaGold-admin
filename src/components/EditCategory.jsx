@@ -9,7 +9,7 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 import { db } from "../firebase/firebase";
-import { uploadToCloudinary } from "../cloudinary/upload";
+import { uploadToR2 } from "../r2/upload";
 
 const EditCategory = () => {
   const navigate = useNavigate();
@@ -111,7 +111,7 @@ const EditCategory = () => {
 
       // Upload new image if changed
       if (imageFile) {
-        imageUrl = await uploadToCloudinary(
+        imageUrl = await uploadToR2(
           imageFile,
           `categories/${formData.name || "others"}`
         );
@@ -132,7 +132,11 @@ const EditCategory = () => {
       }).then(() => navigate("/category"));
     } catch (error) {
       console.error("Error:", error);
-      Swal.fire("Error", "Failed to update category!", "error");
+      Swal.fire(
+        "Error",
+        error.message || "Failed to update category!",
+        "error"
+      );
     } finally {
       setLoading(false);
     }

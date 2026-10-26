@@ -9,9 +9,8 @@ import {
   doc,
   updateDoc,
 } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { db, storage } from "../firebase/firebase";
-import { uploadToCloudinary } from "../cloudinary/upload";
+import { db } from "../firebase/firebase";
+import { uploadToR2 } from "../r2/upload";
 
 const AddCategory = () => {
   const navigate = useNavigate();
@@ -77,8 +76,7 @@ const AddCategory = () => {
     setLoading(true);
 
     try {
-      // 1️⃣ Upload image to Cloudinary
-      const imageUrl = await uploadToCloudinary(
+      const imageUrl = await uploadToR2(
         imageFile,
         `categories/${formData.name || "others"}`
       );
@@ -105,7 +103,11 @@ const AddCategory = () => {
       }).then(() => navigate("/categories"));
     } catch (error) {
       console.error("Error:", error);
-      Swal.fire("Error", "Failed to create category!", "error");
+      Swal.fire(
+        "Error",
+        error.message || "Failed to create category!",
+        "error"
+      );
     } finally {
       setLoading(false);
     }

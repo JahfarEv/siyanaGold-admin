@@ -12,7 +12,7 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 import { db } from "../firebase/firebase";
-import { uploadToCloudinary } from "../cloudinary/upload";
+import { uploadToR2 } from "../r2/upload";
 import LoadingOverlay from "./ui/LoadingOverlay";
 
 const EditProduct = () => {
@@ -44,17 +44,6 @@ const EditProduct = () => {
     "Rose Gold",
     "Sterling Silver",
   ];
-  const gemstones = [
-    "Diamond",
-    "Pearl",
-    "Sapphire",
-    "Ruby",
-    "Emerald",
-    "Amethyst",
-    "Topaz",
-    "Opal",
-  ];
-
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -174,7 +163,7 @@ const EditProduct = () => {
         images.map(async (img) => {
           // Case 1: New Image (has file to upload)
           if (img.file) {
-            const url = await uploadToCloudinary(
+            const url = await uploadToR2(
               img.file,
               `products/${formData.category.name || "others"}`
             );
@@ -232,7 +221,7 @@ const EditProduct = () => {
       navigate("/products");
     } catch (error) {
       console.error("Error updating product:", error);
-      alert("Failed to update product.");
+      alert(`Failed to update product: ${error.message || "Please try again."}`);
     } finally {
       setLoading(false);
       setImageUploading(false);

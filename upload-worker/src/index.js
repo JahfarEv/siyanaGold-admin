@@ -19,12 +19,14 @@ const jsonResponse = (body, status, origin) =>
     status,
     headers: {
       "Content-Type": "application/json",
-      ...(origin ? {
-        "Access-Control-Allow-Origin": origin,
-        "Access-Control-Allow-Headers": "Authorization, Content-Type",
-        "Access-Control-Allow-Methods": "POST, OPTIONS",
-        "Vary": "Origin",
-      } : {}),
+      ...(origin
+        ? {
+            "Access-Control-Allow-Origin": origin,
+            "Access-Control-Allow-Headers": "Authorization, Content-Type",
+            "Access-Control-Allow-Methods": "POST, OPTIONS",
+            Vary: "Origin",
+          }
+        : {}),
     },
   });
 
@@ -47,7 +49,7 @@ const verifyAdmin = async (idToken, env) => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ idToken }),
-      }
+      },
     );
   } catch {
     return { status: "verification-unavailable" };
@@ -62,7 +64,10 @@ const verifyAdmin = async (idToken, env) => {
       return { status: "verification-unavailable" };
     }
 
-    if (errorMessage === "API_KEY_INVALID" || errorMessage === "API_KEY_SERVICE_BLOCKED") {
+    if (
+      errorMessage === "API_KEY_INVALID" ||
+      errorMessage === "API_KEY_SERVICE_BLOCKED"
+    ) {
       return { status: "invalid-api-key" };
     }
     return { status: "invalid-token" };
@@ -87,20 +92,20 @@ const verifyAdmin = async (idToken, env) => {
 };
 
 const normalizeFolder = (folder) => {
-  const segments = folder
-    .split("/")
-    .map((segment) =>
-      segment
-        .trim()
-        .toLowerCase()
-        .replace(/[^a-z0-9_-]+/g, "-")
-        .replace(/^-+|-+$/g, "")
-    );
+  const segments = folder.split("/").map((segment) =>
+    segment
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9_-]+/g, "-")
+      .replace(/^-+|-+$/g, ""),
+  );
   const root = segments[0];
 
   if (
     !ALLOWED_FOLDERS.has(root) ||
-    segments.some((segment) => !segment || segment === "." || segment === "..") ||
+    segments.some(
+      (segment) => !segment || segment === "." || segment === "..",
+    ) ||
     segments.length > (root === "products" || root === "categories" ? 2 : 1)
   ) {
     return null;
@@ -127,7 +132,8 @@ const getFileExtension = (file) => {
 export default {
   async fetch(request, env) {
     const origin = getAllowedOrigin(request, env);
-    if (!origin) return jsonResponse({ error: "Origin not allowed." }, 403, null);
+    if (!origin)
+      return jsonResponse({ error: "Origin not allowed." }, 403, null);
 
     if (new URL(request.url).pathname !== "/upload") {
       return jsonResponse({ error: "Not found." }, 404, origin);
@@ -139,9 +145,9 @@ export default {
         headers: {
           "Access-Control-Allow-Origin": origin,
           "Access-Control-Allow-Headers": "Authorization, Content-Type",
-          "Access-Control-Allow-Methods": "POST, OPTIONS",
+          "Access-Control-Allow-Methods": "POST, DELETE, OPTIONS",
           "Access-Control-Max-Age": "86400",
-          "Vary": "Origin",
+          Vary: "Origin",
         },
       });
     }
@@ -151,7 +157,11 @@ export default {
     }
 
     if (!env.FIREBASE_API_KEY || !env.ADMIN_EMAILS || !env.PUBLIC_BASE) {
-      return jsonResponse({ error: "Upload worker is not fully configured." }, 500, origin);
+      return jsonResponse(
+        { error: "Upload worker is not fully configured." },
+        500,
+        origin,
+      );
     }
 
     const authorization = request.headers.get("Authorization");
@@ -160,49 +170,101 @@ export default {
       : "";
 
     if (!idToken) {
-      return jsonResponse({ error: "Firebase sign-in token is missing. Sign in again." }, 401, origin);
+      return jsonResponse(
+        { error: "Firebase sign-in token is missing. Sign in again." },
+        401,
+        origin,
+      );
     }
 
     const authentication = await verifyAdmin(idToken, env);
     if (authentication.status === "invalid-token") {
-      return jsonResponse({ error: "Firebase sign-in token is invalid or expired. Sign out and sign in again." }, 401, origin);
+      return jsonResponse(
+        {
+          error:
+            "Firebase sign-in token is invalid or expired. Sign out and sign in again.",
+        },
+        401,
+        origin,
+      );
     }
     if (authentication.status === "not-admin") {
-      return jsonResponse({ error: "This Firebase account is not included in the upload Worker's ADMIN_EMAILS allowlist." }, 403, origin);
+      return jsonResponse(
+        {
+          error:
+            "This Firebase account is not included in the upload Worker's ADMIN_EMAILS allowlist.",
+        },
+        403,
+        origin,
+      );
     }
     if (authentication.status === "invalid-api-key") {
-      return jsonResponse({ error: "The upload Worker FIREBASE_API_KEY is invalid or blocked. Set the Web API key for the same Firebase project used by the admin app, then redeploy." }, 500, origin);
+      return jsonResponse(
+        {
+          error:
+            "The upload Worker FIREBASE_API_KEY is invalid or blocked. Set the Web API key for the same Firebase project used by the admin app, then redeploy.",
+        },
+        500,
+        origin,
+      );
     }
     if (authentication.status !== "verified") {
-      return jsonResponse({ error: "The upload Worker could not verify the Firebase token. Check its Firebase API key and try again." }, 502, origin);
+      return jsonResponse(
+        {
+          error:
+            "The upload Worker could not verify the Firebase token. Check its Firebase API key and try again.",
+        },
+        502,
+        origin,
+      );
     }
 
     const contentLength = Number(request.headers.get("Content-Length") || 0);
     if (contentLength > MAX_FILE_SIZE + 64 * 1024) {
-      return jsonResponse({ error: "Image must be 10MB or smaller." }, 413, origin);
+      return jsonResponse(
+        { error: "Image must be 10MB or smaller." },
+        413,
+        origin,
+      );
     }
 
     let formData;
     try {
       formData = await request.formData();
     } catch {
-      return jsonResponse({ error: "Expected a multipart image upload." }, 400, origin);
+      return jsonResponse(
+        { error: "Expected a multipart image upload." },
+        400,
+        origin,
+      );
     }
 
     const file = formData.get("file");
     const folder = formData.get("folder");
     if (!(file instanceof File) || typeof folder !== "string") {
-      return jsonResponse({ error: "An image file and folder are required." }, 400, origin);
+      return jsonResponse(
+        { error: "An image file and folder are required." },
+        400,
+        origin,
+      );
     }
 
     if (file.size === 0) {
       return jsonResponse({ error: "Image file is empty." }, 400, origin);
     }
     if (file.size > MAX_FILE_SIZE) {
-      return jsonResponse({ error: "Image must be 10MB or smaller." }, 413, origin);
+      return jsonResponse(
+        { error: "Image must be 10MB or smaller." },
+        413,
+        origin,
+      );
     }
     if (!ALLOWED_CONTENT_TYPES.has(file.type)) {
-      return jsonResponse({ error: "Only AVIF, GIF, JPEG, PNG, and WebP images are supported." }, 415, origin);
+      return jsonResponse(
+        { error: "Only AVIF, GIF, JPEG, PNG, and WebP images are supported." },
+        415,
+        origin,
+      );
     }
 
     const objectFolder = normalizeFolder(folder);
@@ -211,7 +273,7 @@ export default {
     }
 
     // const key = `image/${objectFolder}/${crypto.randomUUID()}${getFileExtension(file)}`;
-const key = `image/${objectFolder}/${crypto.randomUUID()}${getFileExtension(file)}`;
+    const key = `image/${objectFolder}/${crypto.randomUUID()}${getFileExtension(file)}`;
 
     try {
       await env.BUCKET.put(key, file.stream(), {
@@ -222,11 +284,19 @@ const key = `image/${objectFolder}/${crypto.randomUUID()}${getFileExtension(file
       });
     } catch (error) {
       console.error("R2 image upload failed:", error);
-      return jsonResponse({ error: "Could not store the image in R2." }, 500, origin);
+      return jsonResponse(
+        { error: "Could not store the image in R2." },
+        500,
+        origin,
+      );
     }
 
     const publicBase = env.PUBLIC_BASE.replace(/\/+$/, "");
     const encodedKey = key.split("/").map(encodeURIComponent).join("/");
-    return jsonResponse({ key, url: `${publicBase}/${encodedKey}` }, 200, origin);
+    return jsonResponse(
+      { key, url: `${publicBase}/${encodedKey}` },
+      200,
+      origin,
+    );
   },
 };

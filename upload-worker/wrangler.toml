@@ -7,7 +7,7 @@ binding = "BUCKET"
 bucket_name = "siyana-images"
 
 [vars]
-ALLOWED_ORIGINS = "https://admin.siyanagoldanddiamonds.in/,http://localhost:5173"
+ALLOWED_ORIGINS = "http://localhost:5173,https://admin.siyanagoldanddiamonds.in"
 PUBLIC_BASE = "https://img.siyanagoldanddiamonds.in"
 FIREBASE_API_KEY = "AIzaSyCX3XAVMzAyMNxEero781x82zNZd4K7XbE"
 ADMIN_EMAILS = "admin@siyanagold.com"

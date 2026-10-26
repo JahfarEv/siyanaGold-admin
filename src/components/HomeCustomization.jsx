@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { db, storage } from "../firebase/firebase";
+import { db } from "../firebase/firebase";
 import {
   collection,
   getDocs,
@@ -10,11 +10,10 @@ import {
   limit,
   addDoc,
 } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import moment from "moment";
 import { Gem, Image, Save } from "lucide-react";
 import LoadingOverlay from "./ui/LoadingOverlay";
-import { uploadToCloudinary } from "../cloudinary/upload";
+import { uploadToR2 } from "../r2/upload";
 
 const HomeCustomization = () => {
   const [carouselItems, setCarouselItems] = useState([]);
@@ -87,9 +86,12 @@ const HomeCustomization = () => {
       for (const item of carouselItems) {
         let finalImageUrl = item.url;
 
-        // If image changed → upload to Cloudinary
+        // Upload the replacement image when one was selected.
         if (pendingImages[item.id]) {
-          finalImageUrl = await uploadToCloudinary(pendingImages[item.id]);
+          finalImageUrl = await uploadToR2(
+            pendingImages[item.id],
+            "home-carousel"
+          );
         }
 
         await updateDoc(doc(db, "homeCarousel", item.id), {
@@ -106,7 +108,7 @@ const HomeCustomization = () => {
       setPendingImages({});
     } catch (err) {
       console.error(err);
-      alert("Update failed");
+      alert(`Update failed: ${err.message || "Please try again."}`);
     } finally {
       setLoading(false);
     }

@@ -4,7 +4,7 @@ import { ArrowLeft, Save, Upload, X, Tag, Image, Route } from "lucide-react";
 import { db } from "../firebase/firebase";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import Swal from "sweetalert2";
-import { uploadToCloudinary } from "../cloudinary/upload";
+import { uploadToR2 } from "../r2/upload";
 import LoadingOverlay from "./ui/LoadingOverlay";
 
 const EditOffer = () => {
@@ -88,7 +88,7 @@ const EditOffer = () => {
         setImageUploading(true);
         const uploadedImages = await Promise.all(
           images.map((img) =>
-            uploadToCloudinary(img.file, `offers`)
+            uploadToR2(img.file, "offers")
           )
         );
         imageUrl = uploadedImages[0]; // Use first image URL
@@ -107,9 +107,10 @@ const EditOffer = () => {
       navigate("/offers");
     } catch (error) {
       console.error("Error updating offer:", error);
-      Swal.fire("Error", "Failed to update offer", "error");
+      Swal.fire("Error", error.message || "Failed to update offer", "error");
     } finally {
       setUploading(false);
+      setImageUploading(false);
     }
   };
 

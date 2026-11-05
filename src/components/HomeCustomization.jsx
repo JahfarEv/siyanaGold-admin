@@ -18,10 +18,12 @@ import { uploadToR2 } from "../r2/upload";
 const HomeCustomization = () => {
   const [carouselItems, setCarouselItems] = useState([]);
   const [goldRate, setGoldRate] = useState({
-    Gold_24: "",
-    Gold_22: "",
-    Gold_18: "",
+    Gold_22_1g: "",
+    Gold_22_8g: "",
+    Gold_18_1g: "",
+    Gold_9_1g: "",
   });
+  const [goldRateId, setGoldRateId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [pendingImages, setPendingImages] = useState({});
   const todayDate = moment().format("YYYY-MM-DD");
@@ -42,13 +44,15 @@ const HomeCustomization = () => {
         );
         const goldSnapshot = await getDocs(q);
         if (!goldSnapshot.empty) {
-          const data = goldSnapshot.docs[0].data();
+          const goldRateDoc = goldSnapshot.docs[0];
+          const data = goldRateDoc.data();
           setGoldRate({
-            perGram: data.perGram,
-            perPavan: data.perPavan,
-            date: data.date,
-            id: goldSnapshot.docs[0].id,
+            Gold_22_1g: data.Gold_22_1g ?? "",
+            Gold_22_8g: data.Gold_22_8g ?? "",
+            Gold_18_1g: data.Gold_18_1g ?? "",
+            Gold_9_1g: data.Gold_9_1g ?? "",
           });
+          setGoldRateId(goldRateDoc.id);
         }
       } catch (err) {
         console.log("Fetch error:", err);
@@ -57,7 +61,7 @@ const HomeCustomization = () => {
       }
     };
     fetchData();
-  }, []);
+  }, [todayDate]);
 
   // 🔹 On Change carousel fields
   const handleCarouselChange = (id, field, value) => {
@@ -120,21 +124,35 @@ const HomeCustomization = () => {
   };
 
   const handleUpdateGoldRate = async () => {
-    if (!goldRate.Gold_24 || !goldRate.Gold_22 || !goldRate.Gold_18) {
+    if (
+      !goldRate.Gold_22_1g ||
+      !goldRate.Gold_22_8g ||
+      !goldRate.Gold_18_1g ||
+      !goldRate.Gold_9_1g
+    ) {
       return alert("Please enter all gold rates!");
     }
 
     setLoading(true);
 
     try {
-      await addDoc(collection(db, "goldRates"), {
-        Gold_24: goldRate.Gold_24,
-        Gold_22: goldRate.Gold_22,
-        Gold_18: goldRate.Gold_18,
-        createdAt: new Date(),
-      });
+      const rateData = {
+        ...goldRate,
+        date: todayDate,
+        updatedAt: new Date(),
+      };
 
-      alert("Gold rate created successfully");
+      if (goldRateId) {
+        await updateDoc(doc(db, "goldRates", goldRateId), rateData);
+      } else {
+        const newGoldRate = await addDoc(collection(db, "goldRates"), {
+          ...rateData,
+          createdAt: new Date(),
+        });
+        setGoldRateId(newGoldRate.id);
+      }
+
+      alert("Gold rate updated successfully");
     } catch (err) {
       console.error("Error creating gold rate:", err);
       alert("Failed to create gold rate");
@@ -259,7 +277,7 @@ const HomeCustomization = () => {
         </div>
 
         <div className="p-6 space-y-6">
-          <div className="grid grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Date
@@ -274,12 +292,12 @@ const HomeCustomization = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                1Gram (₹)
+                22K - 1g (₹)
               </label>
               <input
                 type="number"
-                name="Gold_24"
-                value={goldRate.Gold_24}
+                name="Gold_22_1g"
+                value={goldRate.Gold_22_1g}
                 onChange={handleGoldRateChange}
                 className="w-full px-4 py-3 border border-amber-200 rounded-xl focus:ring-2 focus:ring-amber-500 bg-amber-50 transition"
               />
@@ -287,24 +305,36 @@ const HomeCustomization = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                8Gram Gold (₹)
+                22K - 8g (₹)
               </label>
               <input
                 type="number"
-                name="Gold_22"
-                value={goldRate.Gold_22}
+                name="Gold_22_8g"
+                value={goldRate.Gold_22_8g}
                 onChange={handleGoldRateChange}
                 className="w-full px-4 py-3 border border-amber-200 rounded-xl focus:ring-2 focus:ring-amber-500 bg-amber-50 transition"
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                18CT Gold (₹)
+                18K - 1g (₹)
               </label>
               <input
                 type="number"
-                name="Gold_18"
-                value={goldRate.Gold_18}
+                name="Gold_18_1g"
+                onChange={handleGoldRateChange}
+                value={goldRate.Gold_18_1g}
+                className="w-full px-4 py-3 border border-amber-200 rounded-xl focus:ring-2 focus:ring-amber-500 bg-amber-50 transition"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                9K - 1g (₹)
+              </label>
+              <input
+                type="number"
+                name="Gold_9_1g"
+                value={goldRate.Gold_9_1g}
                 onChange={handleGoldRateChange}
                 className="w-full px-4 py-3 border border-amber-200 rounded-xl focus:ring-2 focus:ring-amber-500 bg-amber-50 transition"
               />
